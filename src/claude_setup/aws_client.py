@@ -18,9 +18,7 @@ class BedrockClient:
                 "--region",
                 self.region,
             ]
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, check=True
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             response = json.loads(result.stdout)
 
             models = []

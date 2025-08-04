@@ -17,9 +17,7 @@ class TestConfigManager:
 
         assert config_manager.claude_dir == Path(".claude")
         assert config_manager.settings_file == "settings.local.json"
-        assert config_manager.settings_path == Path(
-            ".claude/settings.local.json"
-        )
+        assert config_manager.settings_path == Path(".claude/settings.local.json")
 
     @patch("claude_setup.config_manager.Path.mkdir")
     def test_ensure_claude_directory(self, mock_mkdir):
@@ -36,9 +34,7 @@ class TestConfigManager:
     @patch("claude_setup.config_manager.Path.mkdir")
     @patch("builtins.open", new_callable=mock_open)
     @patch("claude_setup.config_manager.ConfigManager.load_settings")
-    def test_save_settings_new_file(
-        self, mock_load_settings, mock_file, mock_mkdir
-    ):
+    def test_save_settings_new_file(self, mock_load_settings, mock_file, mock_mkdir):
         """Test saving settings to a new file."""
         # Arrange
         config_manager = ConfigManager()
@@ -89,9 +85,7 @@ class TestConfigManager:
         # Verify that write was called (json.dump will call write internally)
         assert mock_file().write.called
 
-    @patch(
-        "builtins.open", new_callable=mock_open, read_data='{"key": "value"}'
-    )
+    @patch("builtins.open", new_callable=mock_open, read_data='{"key": "value"}')
     @patch("claude_setup.config_manager.Path.exists")
     def test_load_settings_success(self, mock_exists, mock_file):
         """Test successfully loading settings."""
@@ -186,9 +180,7 @@ class TestConfigManager:
     @patch("claude_setup.config_manager.Path.mkdir")
     @patch("builtins.open", new_callable=mock_open)
     @patch("claude_setup.config_manager.ConfigManager.load_settings")
-    def test_save_settings_empty_dict(
-        self, mock_load_settings, mock_file, mock_mkdir
-    ):
+    def test_save_settings_empty_dict(self, mock_load_settings, mock_file, mock_mkdir):
         """Test saving empty settings dictionary."""
         # Arrange
         config_manager = ConfigManager()

@@ -94,8 +94,7 @@ class TestEndToEndWorkflow:
                 # Assert
                 assert result.exit_code == 0
                 assert (
-                    f"Fetching available Claude models from {region}"
-                    in result.output
+                    f"Fetching available Claude models from {region}" in result.output
                 )
 
                 # Verify region in configuration
@@ -225,9 +224,7 @@ class TestErrorHandlingIntegration:
         """Test workflow when Bedrock API returns error."""
         # Arrange
         mock_auth.return_value = True
-        mock_subprocess.side_effect = Exception(
-            "AccessDeniedException: Not authorized"
-        )
+        mock_subprocess.side_effect = Exception("AccessDeniedException: Not authorized")
 
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -314,9 +311,7 @@ class TestConcurrencyAndFileSystemEdgeCases:
                 # Read the file
                 with open(gitignore_path, "r") as f:
                     content = f.read()
-                    lines = (
-                        content.strip().split("\n") if content.strip() else []
-                    )
+                    lines = content.strip().split("\n") if content.strip() else []
 
                 # Simulate another process modifying the file
                 with open(gitignore_path, "w") as f:

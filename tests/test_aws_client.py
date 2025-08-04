@@ -119,9 +119,7 @@ class TestBedrockClient:
         response_without_name = {
             "inferenceProfileSummaries": [
                 {
-                    "inferenceProfileId": (
-                        "anthropic.claude-3-sonnet-20240229-v1:0"
-                    ),
+                    "inferenceProfileId": ("anthropic.claude-3-sonnet-20240229-v1:0"),
                     "inferenceProfileArn": (
                         "arn:aws:bedrock:us-west-2:123456789012:"
                         "inference-profile/"
@@ -203,9 +201,7 @@ class TestBedrockClient:
         mock_run.side_effect = error
 
         # Act & Assert
-        with pytest.raises(
-            Exception, match=f"Error listing models: {error_message}"
-        ):
+        with pytest.raises(Exception, match=f"Error listing models: {error_message}"):
             client.list_claude_models()
 
         mock_run.assert_called_once()
@@ -239,9 +235,7 @@ class TestBedrockClient:
         mock_run.assert_called_once()
 
     @patch("claude_setup.aws_client.subprocess.run")
-    def test_list_claude_models_custom_region(
-        self, mock_run, mock_aws_response
-    ):
+    def test_list_claude_models_custom_region(self, mock_run, mock_aws_response):
         """Test listing Claude models with custom region."""
         # Arrange
         custom_region = "eu-west-1"
@@ -276,9 +270,7 @@ class TestBedrockClient:
         partial_response = {
             "inferenceProfileSummaries": [
                 {
-                    "inferenceProfileId": (
-                        "anthropic.claude-3-sonnet-20240229-v1:0"
-                    ),
+                    "inferenceProfileId": ("anthropic.claude-3-sonnet-20240229-v1:0"),
                     # Missing other fields
                 }
             ]
@@ -306,9 +298,7 @@ class TestBedrockClient:
         mock_run.side_effect = FileNotFoundError("aws command not found")
 
         # Act & Assert
-        with pytest.raises(
-            Exception, match="Unexpected error: aws command not found"
-        ):
+        with pytest.raises(Exception, match="Unexpected error: aws command not found"):
             client.list_claude_models()
 
         mock_run.assert_called_once()

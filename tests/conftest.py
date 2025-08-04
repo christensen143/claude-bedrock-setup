@@ -69,9 +69,7 @@ def mock_aws_response():
     return {
         "inferenceProfileSummaries": [
             {
-                "inferenceProfileId": (
-                    "anthropic.claude-3-sonnet-20240229-v1:0"
-                ),
+                "inferenceProfileId": ("anthropic.claude-3-sonnet-20240229-v1:0"),
                 "inferenceProfileName": "Claude 3 Sonnet",
                 "inferenceProfileArn": (
                     "arn:aws:bedrock:us-west-2:123456789012:"
@@ -81,9 +79,7 @@ def mock_aws_response():
                 "status": "ACTIVE",
             },
             {
-                "inferenceProfileId": (
-                    "anthropic.claude-3-haiku-20240307-v1:0"
-                ),
+                "inferenceProfileId": ("anthropic.claude-3-haiku-20240307-v1:0"),
                 "inferenceProfileName": "Claude 3 Haiku",
                 "inferenceProfileArn": (
                     "arn:aws:bedrock:us-west-2:123456789012:"
@@ -93,9 +89,7 @@ def mock_aws_response():
                 "status": "ACTIVE",
             },
             {
-                "inferenceProfileId": (
-                    "anthropic.claude-3-opus-20240229-v1:0"
-                ),
+                "inferenceProfileId": ("anthropic.claude-3-opus-20240229-v1:0"),
                 "inferenceProfileName": "Claude 3 Opus",
                 "inferenceProfileArn": (
                     "arn:aws:bedrock:us-west-2:123456789012:"

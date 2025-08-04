@@ -219,9 +219,7 @@ class TestSetupCommand:
 
     @patch("claude_setup.cli.BedrockClient")
     @patch("claude_setup.cli.check_aws_auth")
-    def test_setup_bedrock_client_exception(
-        self, mock_auth, mock_client_class
-    ):
+    def test_setup_bedrock_client_exception(self, mock_auth, mock_client_class):
         """Test setup when BedrockClient raises exception."""
         # Arrange
         mock_auth.return_value = True
@@ -257,9 +255,7 @@ class TestSetupCommand:
 
         # Act & Assert
         with pytest.raises(Exception, match="Config save error"):
-            self.runner.invoke(
-                setup, ["--non-interactive"], catch_exceptions=False
-            )
+            self.runner.invoke(setup, ["--non-interactive"], catch_exceptions=False)
 
     @patch(
         "claude_setup.cli.ensure_gitignore",
@@ -287,9 +283,7 @@ class TestSetupCommand:
 
         # Act & Assert
         with pytest.raises(Exception, match="Gitignore error"):
-            self.runner.invoke(
-                setup, ["--non-interactive"], catch_exceptions=False
-            )
+            self.runner.invoke(setup, ["--non-interactive"], catch_exceptions=False)
 
 
 class TestStatusCommand:
@@ -337,9 +331,7 @@ class TestStatusCommand:
         assert (
             "anthropic.claude-3-sonnet-20240229-v1:0" in result.output
         )  # Extracted from ARN
-        assert (
-            "Settings file: /test/.claude/settings.local.json" in result.output
-        )
+        assert "Settings file: /test/.claude/settings.local.json" in result.output
         mock_config.load_settings.assert_called_once()
 
     @patch("claude_setup.cli.ConfigManager")
@@ -363,8 +355,7 @@ class TestStatusCommand:
         # Assert
         assert result.exit_code == 0
         assert (
-            "ANTHROPIC_MODEL: anthropic.claude-3-haiku-20240307-v1:0"
-            in result.output
+            "ANTHROPIC_MODEL: anthropic.claude-3-haiku-20240307-v1:0" in result.output
         )
 
     @patch("claude_setup.cli.ConfigManager")
@@ -429,9 +420,7 @@ class TestResetCommand:
         result = self.runner.invoke(reset, input="n\n")
 
         # Assert
-        assert (
-            result.exit_code == 1
-        )  # Click confirmation returns 1 when cancelled
+        assert result.exit_code == 1  # Click confirmation returns 1 when cancelled
         mock_config.reset_settings.assert_not_called()
 
     @patch("claude_setup.cli.ConfigManager")

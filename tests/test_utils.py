@@ -105,9 +105,7 @@ class MockPath:
         self.unlink_called = True
 
 
-def assert_subprocess_called_with(
-    mock_run, expected_cmd, expected_kwargs=None
-):
+def assert_subprocess_called_with(mock_run, expected_cmd, expected_kwargs=None):
     """Assert that subprocess.run was called with expected arguments.
 
     Args:
@@ -183,9 +181,7 @@ class CLITestHelper:
             result: Click Result object
             expected_output: Expected output string (optional)
         """
-        assert (
-            result.exit_code == 0
-        ), f"Command failed with output: {result.output}"
+        assert result.exit_code == 0, f"Command failed with output: {result.output}"
         if expected_output:
             assert expected_output in result.output
 

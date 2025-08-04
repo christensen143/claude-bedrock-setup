@@ -20,12 +20,8 @@ def cli():
 
 
 @cli.command()
-@click.option(
-    "--region", default="us-west-2", help="AWS region (default: us-west-2)"
-)
-@click.option(
-    "--non-interactive", is_flag=True, help="Run in non-interactive mode"
-)
+@click.option("--region", default="us-west-2", help="AWS region (default: us-west-2)")
+@click.option("--non-interactive", is_flag=True, help="Run in non-interactive mode")
 def setup(region, non_interactive):
     """Set up Claude to use AWS Bedrock"""
     console.print(
@@ -39,9 +35,7 @@ def setup(region, non_interactive):
     console.print("\n[yellow]Checking AWS authentication...[/yellow]")
     if not check_aws_auth():
         console.print("[red]✗ Not authenticated with AWS[/red]")
-        console.print(
-            "\nPlease authenticate with AWS using one of these " "methods:"
-        )
+        console.print("\nPlease authenticate with AWS using one of these " "methods:")
         console.print("  • aws configure")
         console.print(
             "  • Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY "
@@ -58,15 +52,12 @@ def setup(region, non_interactive):
 
     # Get available models
     console.print(
-        f"\n[yellow]Fetching available Claude models from "
-        f"{region}...[/yellow]"
+        f"\n[yellow]Fetching available Claude models from " f"{region}...[/yellow]"
     )
     models = bedrock_client.list_claude_models()
 
     if not models:
-        console.print(
-            "[red]No Claude models found in the specified " "region.[/red]"
-        )
+        console.print("[red]No Claude models found in the specified " "region.[/red]")
         console.print("Please check your AWS permissions and region.")
         sys.exit(1)
 
@@ -89,9 +80,7 @@ def setup(region, non_interactive):
                     selected_model = models[choice - 1]
                     break
                 else:
-                    console.print(
-                        "[red]Invalid choice. Please try " "again.[/red]"
-                    )
+                    console.print("[red]Invalid choice. Please try " "again.[/red]")
             except (ValueError, KeyboardInterrupt):
                 console.print("\n[yellow]Setup cancelled.[/yellow]")
                 sys.exit(0)
@@ -114,9 +103,7 @@ def setup(region, non_interactive):
     console.print("\n[green]✓ Configuration saved successfully![/green]")
     console.print(f"\nModel: [cyan]{selected_model['name']}[/cyan]")
     console.print(f"Region: [cyan]{region}[/cyan]")
-    console.print(
-        f"Settings file: [cyan]{config_manager.settings_path}" "[/cyan]"
-    )
+    console.print(f"Settings file: [cyan]{config_manager.settings_path}" "[/cyan]")
     console.print("\nClaude is now configured to use AWS Bedrock!")
 
 
@@ -133,9 +120,7 @@ def status():
         )
         return
 
-    console.print(
-        Panel.fit(Text("Claude Bedrock Configuration", style="bold blue"))
-    )
+    console.print(Panel.fit(Text("Claude Bedrock Configuration", style="bold blue")))
 
     console.print("\n[bold]Current settings:[/bold]")
     for key, value in settings.items():
@@ -146,9 +131,7 @@ def status():
         else:
             console.print(f"  {key}: [cyan]{value}[/cyan]")
 
-    console.print(
-        f"\n[dim]Settings file: " f"{config_manager.settings_path}[/dim]"
-    )
+    console.print(f"\n[dim]Settings file: " f"{config_manager.settings_path}[/dim]")
 
 
 @cli.command()
