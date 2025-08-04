@@ -248,16 +248,20 @@ class TestErrorHandlingIntegration:
             finally:
                 os.chdir(original_dir)
 
-    @patch.object(sys.modules["claude_setup.auth_checker"], "check_aws_auth")
     @patch("claude_setup.aws_client.subprocess.run")
+    @patch.object(sys.modules["claude_setup.cli"], "check_aws_auth")
     @pytest.mark.skipif(
         sys.platform == "win32", reason="Temporary directory cleanup issues on Windows"
     )
-    def test_bedrock_api_error_workflow(self, mock_subprocess, mock_auth):
+    def test_bedrock_api_error_workflow(self, mock_auth, mock_subprocess):
         """Test workflow when Bedrock API returns error."""
         # Arrange
         mock_auth.return_value = True
-        mock_subprocess.side_effect = Exception("AccessDeniedException: Not authorized")
+        # subprocess.run is called when listing models - should raise CalledProcessError
+        from subprocess import CalledProcessError
+        mock_subprocess.side_effect = CalledProcessError(
+            1, "aws bedrock", stderr="AccessDeniedException: Not authorized"
+        )
 
         original_dir = os.getcwd()
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -265,11 +269,13 @@ class TestErrorHandlingIntegration:
             try:
                 os.chdir(temp_path)
 
-                # Act & Assert
-                with pytest.raises(Exception, match="AccessDeniedException"):
-                    self.runner.invoke(
-                        cli, ["setup", "--non-interactive"], catch_exceptions=False
-                    )
+                # Act
+                result = self.runner.invoke(cli, ["setup", "--non-interactive"])
+                
+                # Assert - The exception from BedrockClient causes the CLI to exit
+                assert result.exit_code != 0
+                # The exception message should appear in the result
+                assert "Access denied" in str(result.exception) or "Access denied" in result.output
 
                 # Verify no configuration was created
                 config_manager = ConfigManager()
