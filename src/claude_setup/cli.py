@@ -13,9 +13,13 @@ from .config_manager import ConfigManager
 from .gitignore_manager import ensure_gitignore
 
 # Create console - disable color when NO_COLOR is set or in tests
-# Rich needs explicit no_color=True to disable ANSI codes
+# Rich needs force_terminal=False to prevent any ANSI codes
 no_color = os.environ.get("NO_COLOR") or os.environ.get("PYTEST_CURRENT_TEST")
-console = Console(no_color=bool(no_color))
+if no_color:
+    # Force non-terminal mode to ensure no ANSI codes at all
+    console = Console(force_terminal=False, no_color=True)
+else:
+    console = Console()
 
 
 @click.group()
