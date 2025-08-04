@@ -6,6 +6,10 @@ to use AWS Bedrock as its AI provider, simplifying the configuration process
 and making it easy to get started with Claude on AWS.
 """
 
+from __future__ import annotations
+
+from typing import Any
+
 __version__ = "0.1.0"
 __author__ = "Chris Christensen"
 __author_email__ = "chris@nexusweblabs.com"
@@ -15,7 +19,7 @@ __url__ = "https://github.com/christensen143/claude-bedrock-setup"
 
 
 # Lazy imports to avoid import issues during setup
-def __getattr__(name):
+def __getattr__(name: str) -> Any:
     if name == "cli":
         from .cli import cli
 
@@ -24,14 +28,10 @@ def __getattr__(name):
         from .config_manager import ConfigManager
 
         return ConfigManager
-    elif name == "AuthChecker":
-        from .auth_checker import AuthChecker
+    elif name == "BedrockClient":
+        from .aws_client import BedrockClient
 
-        return AuthChecker
-    elif name == "AWSClient":
-        from .aws_client import AWSClient
-
-        return AWSClient
+        return BedrockClient
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
@@ -44,6 +44,5 @@ __all__ = [
     "__url__",
     "cli",
     "ConfigManager",
-    "AuthChecker",
-    "AWSClient",
+    "BedrockClient",
 ]

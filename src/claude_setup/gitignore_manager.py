@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 
-def ensure_gitignore():
+def ensure_gitignore() -> None:
     """Ensure .claude/settings.local.json is in .gitignore"""
     gitignore_path = Path(".gitignore")
     claude_settings_pattern = ".claude/settings.local.json"

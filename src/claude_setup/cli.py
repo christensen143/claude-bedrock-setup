@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import click
 from rich.console import Console
 from rich.panel import Panel
@@ -14,7 +16,7 @@ console = Console()
 
 @click.group()
 @click.version_option(version="0.1.0", prog_name="claude-bedrock-setup")
-def cli():
+def cli() -> None:
     """Claude Bedrock Setup CLI - Configure Claude to use AWS Bedrock"""
     pass
 
@@ -22,7 +24,7 @@ def cli():
 @cli.command()
 @click.option("--region", default="us-west-2", help="AWS region (default: us-west-2)")
 @click.option("--non-interactive", is_flag=True, help="Run in non-interactive mode")
-def setup(region, non_interactive):
+def setup(region: str, non_interactive: bool) -> None:
     """Set up Claude to use AWS Bedrock"""
     console.print(
         Panel.fit(
@@ -108,7 +110,7 @@ def setup(region, non_interactive):
 
 
 @cli.command()
-def status():
+def status() -> None:
     """Show current Claude Bedrock configuration"""
     config_manager = ConfigManager()
     settings = config_manager.load_settings()
@@ -138,7 +140,7 @@ def status():
 @click.confirmation_option(
     prompt="Are you sure you want to reset the " "configuration?"
 )
-def reset():
+def reset() -> None:
     """Reset Claude Bedrock configuration"""
     config_manager = ConfigManager()
     config_manager.reset_settings()

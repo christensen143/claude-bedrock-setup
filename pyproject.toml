@@ -115,7 +115,7 @@ extend-exclude = '''
 '''
 
 [tool.mypy]
-python_version = "3.7"
+python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 warn_redundant_casts = true
