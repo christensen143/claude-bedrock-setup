@@ -287,7 +287,7 @@ class TestErrorHandlingIntegration:
                 # Create a read-only directory to simulate permission error
                 claude_dir = temp_path / ".claude"
                 claude_dir.mkdir()
-                os.chmod(claude_dir, 0o444)  # Read-only
+                os.chmod(claude_dir, 0o500)  # Read-only for owner
 
                 try:
                     config_manager = ConfigManager()
