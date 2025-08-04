@@ -1,17 +1,24 @@
+"""setup.py - Setup script for the Claude Bedrock Setup CLI tool."""
+
 import os
+import re
 from setuptools import setup, find_packages
 
 
-# Read version from _version.py
 def get_version():
-    version = {}
-    with open(os.path.join("src", "claude_setup", "_version.py"), "r", encoding="utf-8") as f:
-        exec(f.read(), version)
-    return version["__version__"]
+    """Extract version from src/claude_setup/_version.py."""
+    version_file = os.path.join("src", "claude_setup", "_version.py")
+    with open(version_file, "r", encoding="utf-8") as f:
+        content = f.read()
+    match = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', content, re.MULTILINE)
+    if match:
+        return match.group(1)
+    raise RuntimeError("Unable to find __version__ in _version.py")
 
 
 # Read long description from README.md
 def get_long_description():
+    """Read the long description from README.md."""
     try:
         with open("README.md", "r", encoding="utf-8") as f:
             return f.read()
@@ -26,7 +33,7 @@ setup(
     name="claude-bedrock-setup",
     version=get_version(),
     author="Chris Christensen",
-    author_email="chris.christensen@example.com",
+    author_email="chris.christensen@nexusweblabs.com",
     description="CLI tool to configure Claude Desktop for AWS Bedrock",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
@@ -38,9 +45,7 @@ setup(
         "Documentation": (
             "https://github.com/christensen143/" "claude-bedrock-setup#readme"
         ),
-        "Source Code": (
-            "https://github.com/christensen143/" "claude-bedrock-setup"
-        ),
+        "Source Code": ("https://github.com/christensen143/" "claude-bedrock-setup"),
         "Changelog": (
             "https://github.com/christensen143/"
             "claude-bedrock-setup/blob/main/CHANGELOG.md"

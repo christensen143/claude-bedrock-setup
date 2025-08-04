@@ -36,11 +36,6 @@ def __getattr__(name: str) -> Any:
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
-# Explicitly define all names in __all__ to support `from claude_setup import *`
-from .cli import cli
-from .config_manager import ConfigManager
-from .aws_client import BedrockClient
-
 __all__ = [
     "__version__",
     "__author__",

@@ -27,7 +27,7 @@ class TestEndToEndWorkflow:
     @patch("claude_setup.aws_client.subprocess.run")
     def test_complete_setup_workflow(
         self, mock_subprocess, mock_auth, mock_gitignore, mock_aws_response
-    ):
+    ):  # noqa: W0613
         """Test complete setup workflow from start to finish."""
         # Arrange
         mock_auth.return_value = True
