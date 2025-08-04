@@ -118,7 +118,7 @@ def status() -> None:
     if not settings:
         console.print("[yellow]No configuration found.[/yellow]")
         console.print(
-            "Run 'claude-setup setup' to configure Claude for " "AWS Bedrock."
+            "Run 'claude-bedrock-setup setup' to configure Claude for " "AWS Bedrock."
         )
         return
 
