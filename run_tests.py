@@ -10,24 +10,26 @@ def run_tests():
     """Run the test suite with coverage reporting."""
     print("Running claude-setup test suite...")
     print("=" * 60)
-    
+
     # Change to project directory
     project_dir = Path(__file__).parent
-    
+
     try:
         # Run tests with coverage
         cmd = [
-            "pipenv", "run", "pytest", 
+            "pipenv",
+            "run",
+            "pytest",
             "tests/",
-            "-v", 
+            "-v",
             "--cov=src/claude_setup",
             "--cov-report=term-missing",
             "--cov-report=html:htmlcov",
-            "--cov-fail-under=95"
+            "--cov-fail-under=95",
         ]
-        
+
         result = subprocess.run(cmd, cwd=project_dir, check=False)
-        
+
         if result.returncode == 0:
             print("\n" + "=" * 60)
             print("✅ All tests passed! Coverage target met.")
@@ -36,7 +38,7 @@ def run_tests():
             print("\n" + "=" * 60)
             print("❌ Some tests failed or coverage target not met.")
             sys.exit(1)
-            
+
     except FileNotFoundError:
         print("❌ Error: pipenv not found. Please install pipenv first.")
         sys.exit(1)

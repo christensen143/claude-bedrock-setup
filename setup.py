@@ -1,20 +1,26 @@
 import os
 from setuptools import setup, find_packages
 
+
 # Read version from __init__.py
 def get_version():
     version = {}
-    with open(os.path.join('src', 'claude_setup', '__init__.py')) as f:
+    with open(os.path.join("src", "claude_setup", "__init__.py")) as f:
         exec(f.read(), version)
-    return version['__version__']
+    return version["__version__"]
+
 
 # Read long description from README.md
 def get_long_description():
     try:
-        with open('README.md', 'r', encoding='utf-8') as f:
+        with open("README.md", "r", encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
-        return "A command-line tool to configure Claude Desktop to use AWS Bedrock as its AI provider."
+        return (
+            "A command-line tool to configure Claude Desktop to use "
+            "AWS Bedrock as its AI provider."
+        )
+
 
 setup(
     name="claude-bedrock-setup",
@@ -26,10 +32,19 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/christensen143/claude-bedrock-setup",
     project_urls={
-        "Bug Tracker": "https://github.com/christensen143/claude-bedrock-setup/issues",
-        "Documentation": "https://github.com/christensen143/claude-bedrock-setup#readme",
-        "Source Code": "https://github.com/christensen143/claude-bedrock-setup",
-        "Changelog": "https://github.com/christensen143/claude-bedrock-setup/blob/main/CHANGELOG.md",
+        "Bug Tracker": (
+            "https://github.com/christensen143/" "claude-bedrock-setup/issues"
+        ),
+        "Documentation": (
+            "https://github.com/christensen143/" "claude-bedrock-setup#readme"
+        ),
+        "Source Code": (
+            "https://github.com/christensen143/" "claude-bedrock-setup"
+        ),
+        "Changelog": (
+            "https://github.com/christensen143/"
+            "claude-bedrock-setup/blob/main/CHANGELOG.md"
+        ),
     },
     packages=find_packages(where="src"),
     package_dir={"": "src"},
