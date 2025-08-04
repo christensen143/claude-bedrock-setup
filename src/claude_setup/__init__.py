@@ -8,8 +8,6 @@ and making it easy to get started with Claude on AWS.
 
 from __future__ import annotations
 
-from typing import Any
-
 from ._version import __version__
 
 __author__ = "Chris Christensen"
@@ -18,22 +16,10 @@ __license__ = "MIT"
 __description__ = "CLI tool to configure Claude Desktop for AWS Bedrock"
 __url__ = "https://github.com/christensen143/claude-bedrock-setup"
 
-
-# Lazy imports to avoid import issues during setup
-def __getattr__(name: str) -> Any:
-    if name == "cli":
-        from .cli import cli
-
-        return cli
-    elif name == "ConfigManager":
-        from .config_manager import ConfigManager
-
-        return ConfigManager
-    elif name == "BedrockClient":
-        from .aws_client import BedrockClient
-
-        return BedrockClient
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+# Module-level imports for __all__ exports
+from .cli import cli
+from .config_manager import ConfigManager
+from .aws_client import BedrockClient
 
 
 __all__ = [
