@@ -94,9 +94,13 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .[test]
         
+    - name: Debug CI environment
+      run: |
+        python debug_ci.py
+        
     - name: Run tests with pytest
       run: |
-        pytest -v --tb=short --cov=claude_setup --cov-report=xml --cov-report=term-missing
+        pytest -v --tb=short --cov=src/claude_setup --cov-report=xml --cov-report=term-missing
         
     - name: Upload coverage to Codecov
       if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
