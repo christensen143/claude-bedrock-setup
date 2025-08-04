@@ -11,9 +11,9 @@ import pytest
 from click.testing import CliRunner
 
 # Import modules to ensure they're in sys.modules
-import claude_setup.cli
-import claude_setup.auth_checker
-import claude_setup.aws_client
+import claude_setup.cli  # noqa: F401
+import claude_setup.auth_checker  # noqa: F401
+import claude_setup.aws_client  # noqa: F401
 
 from claude_setup.cli import cli
 from claude_setup.config_manager import ConfigManager

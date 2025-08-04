@@ -7,7 +7,7 @@ import pytest
 from click.testing import CliRunner
 
 # Import CLI module to ensure it's in sys.modules
-import claude_setup.cli
+import claude_setup.cli  # noqa: F401
 
 # Then import the commands we need
 from claude_setup.cli import cli, setup, status, reset
