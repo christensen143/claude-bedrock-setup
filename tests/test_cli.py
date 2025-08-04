@@ -2,11 +2,17 @@
 
 from unittest.mock import patch, MagicMock
 import sys
+import importlib
 
 import pytest
 from click.testing import CliRunner
 
-from claude_setup.cli import cli, setup, status, reset
+# Import the cli module explicitly to ensure we get the module, not the Click group
+cli_module = importlib.import_module("claude_setup.cli")
+cli = cli_module.cli
+setup = cli_module.setup
+status = cli_module.status
+reset = cli_module.reset
 
 
 class TestCLI:
@@ -39,10 +45,10 @@ class TestSetupCommand:
         """Set up test fixtures."""
         self.runner = CliRunner(env={"NO_COLOR": "1"})
 
-    @patch("claude_setup.cli.ensure_gitignore")
-    @patch("claude_setup.cli.ConfigManager")
-    @patch("claude_setup.cli.BedrockClient")
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch.object(cli_module, "ensure_gitignore")
+    @patch.object(cli_module, "ConfigManager")
+    @patch.object(cli_module, "BedrockClient")
+    @patch.object(cli_module, "check_aws_auth")
     def test_setup_success_non_interactive(
         self,
         mock_auth,
@@ -73,10 +79,10 @@ class TestSetupCommand:
         mock_config.save_settings.assert_called_once()
         mock_gitignore.assert_called_once()
 
-    @patch("claude_setup.cli.ensure_gitignore")
-    @patch("claude_setup.cli.ConfigManager")
-    @patch("claude_setup.cli.BedrockClient")
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch.object(cli_module, "ensure_gitignore")
+    @patch.object(cli_module, "ConfigManager")
+    @patch.object(cli_module, "BedrockClient")
+    @patch.object(cli_module, "check_aws_auth")
     def test_setup_success_interactive(
         self,
         mock_auth,
@@ -108,7 +114,7 @@ class TestSetupCommand:
         mock_config.save_settings.assert_called_once()
         mock_gitignore.assert_called_once()
 
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch.object(cli_module, "check_aws_auth")
     def test_setup_auth_failure(self, mock_auth):
         """Test setup when AWS authentication fails."""
         # Arrange
@@ -123,8 +129,8 @@ class TestSetupCommand:
         assert "aws configure" in result.output
         mock_auth.assert_called_once()
 
-    @patch("claude_setup.cli.BedrockClient")
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch.object(cli_module, "BedrockClient")
+    @patch.object(cli_module, "check_aws_auth")
     def test_setup_no_models_found(self, mock_auth, mock_client_class):
         """Test setup when no Claude models are found."""
         # Arrange
@@ -142,10 +148,10 @@ class TestSetupCommand:
         mock_auth.assert_called_once()
         mock_client.list_claude_models.assert_called_once()
 
-    @patch("claude_setup.cli.ensure_gitignore")
-    @patch("claude_setup.cli.ConfigManager")
-    @patch("claude_setup.cli.BedrockClient")
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch.object(cli_module, "ensure_gitignore")
+    @patch.object(cli_module, "ConfigManager")
+    @patch.object(cli_module, "BedrockClient")
+    @patch.object(cli_module, "check_aws_auth")
     def test_setup_custom_region(
         self,
         mock_auth,
@@ -176,8 +182,8 @@ class TestSetupCommand:
         call_args = mock_config.save_settings.call_args[0][0]
         assert call_args["AWS_REGION"] == "eu-west-1"
 
-    @patch("claude_setup.cli.BedrockClient")
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch.object(cli_module, "BedrockClient")
+    @patch.object(cli_module, "check_aws_auth")
     def test_setup_interactive_invalid_choice(
         self, mock_auth, mock_client_class, mock_claude_models
     ):
@@ -195,8 +201,8 @@ class TestSetupCommand:
         assert result.exit_code == 0
         assert "Invalid choice. Please try again." in result.output
 
-    @patch("claude_setup.cli.BedrockClient")
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch.object(cli_module, "BedrockClient")
+    @patch.object(cli_module, "check_aws_auth")
     def test_setup_interactive_keyboard_interrupt(
         self, mock_auth, mock_client_class, mock_claude_models
     ):
@@ -218,8 +224,8 @@ class TestSetupCommand:
             and "Aborted!" in result.output
         )
 
-    @patch("claude_setup.cli.BedrockClient")
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch.object(cli_module, "BedrockClient")
+    @patch.object(cli_module, "check_aws_auth")
     def test_setup_bedrock_client_exception(self, mock_auth, mock_client_class):
         """Test setup when BedrockClient raises exception."""
         # Arrange
@@ -232,10 +238,10 @@ class TestSetupCommand:
         with pytest.raises(Exception, match="AWS API Error"):
             self.runner.invoke(setup, catch_exceptions=False)
 
-    @patch("claude_setup.cli.ensure_gitignore")
-    @patch("claude_setup.cli.ConfigManager")
-    @patch("claude_setup.cli.BedrockClient")
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch.object(cli_module, "ensure_gitignore")
+    @patch.object(cli_module, "ConfigManager")
+    @patch.object(cli_module, "BedrockClient")
+    @patch.object(cli_module, "check_aws_auth")
     def test_setup_config_manager_exception(
         self,
         mock_auth,
@@ -258,13 +264,12 @@ class TestSetupCommand:
         with pytest.raises(Exception, match="Config save error"):
             self.runner.invoke(setup, ["--non-interactive"], catch_exceptions=False)
 
-    @patch(
-        "claude_setup.cli.ensure_gitignore",
-        side_effect=Exception("Gitignore error"),
+    @patch.object(
+        cli_module, "ensure_gitignore", side_effect=Exception("Gitignore error")
     )
-    @patch("claude_setup.cli.ConfigManager")
-    @patch("claude_setup.cli.BedrockClient")
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch.object(cli_module, "ConfigManager")
+    @patch.object(cli_module, "BedrockClient")
+    @patch.object(cli_module, "check_aws_auth")
     def test_setup_gitignore_exception(
         self,
         mock_auth,
@@ -294,7 +299,7 @@ class TestStatusCommand:
         """Set up test fixtures."""
         self.runner = CliRunner(env={"NO_COLOR": "1"})
 
-    @patch("claude_setup.cli.ConfigManager")
+    @patch.object(cli_module, "ConfigManager")
     def test_status_no_configuration(self, mock_config_class):
         """Test status when no configuration exists."""
         # Arrange
@@ -311,7 +316,7 @@ class TestStatusCommand:
         assert "Run 'claude-bedrock-setup setup'" in result.output
         mock_config.load_settings.assert_called_once()
 
-    @patch("claude_setup.cli.ConfigManager")
+    @patch.object(cli_module, "ConfigManager")
     def test_status_with_configuration(self, mock_config_class, mock_settings):
         """Test status with existing configuration."""
         # Arrange
@@ -335,7 +340,7 @@ class TestStatusCommand:
         assert "Settings file: /test/.claude/settings.local.json" in result.output
         mock_config.load_settings.assert_called_once()
 
-    @patch("claude_setup.cli.ConfigManager")
+    @patch.object(cli_module, "ConfigManager")
     def test_status_arn_extraction(self, mock_config_class):
         """Test status with ARN extraction for ANTHROPIC_MODEL."""
         # Arrange
@@ -359,7 +364,7 @@ class TestStatusCommand:
             "ANTHROPIC_MODEL: anthropic.claude-3-haiku-20240307-v1:0" in result.output
         )
 
-    @patch("claude_setup.cli.ConfigManager")
+    @patch.object(cli_module, "ConfigManager")
     def test_status_simple_model_id(self, mock_config_class):
         """Test status with simple model ID (no ARN)."""
         # Arrange
@@ -375,7 +380,7 @@ class TestStatusCommand:
         assert result.exit_code == 0
         assert "ANTHROPIC_MODEL: claude-3-sonnet" in result.output
 
-    @patch("claude_setup.cli.ConfigManager")
+    @patch.object(cli_module, "ConfigManager")
     def test_status_config_manager_exception(self, mock_config_class):
         """Test status when ConfigManager raises exception."""
         # Arrange
@@ -395,7 +400,7 @@ class TestResetCommand:
         """Set up test fixtures."""
         self.runner = CliRunner(env={"NO_COLOR": "1"})
 
-    @patch("claude_setup.cli.ConfigManager")
+    @patch.object(cli_module, "ConfigManager")
     def test_reset_confirmed(self, mock_config_class):
         """Test reset when user confirms."""
         # Arrange
@@ -410,7 +415,7 @@ class TestResetCommand:
         assert "Configuration reset successfully." in result.output
         mock_config.reset_settings.assert_called_once()
 
-    @patch("claude_setup.cli.ConfigManager")
+    @patch.object(cli_module, "ConfigManager")
     def test_reset_cancelled(self, mock_config_class):
         """Test reset when user cancels."""
         # Arrange
@@ -424,7 +429,7 @@ class TestResetCommand:
         assert result.exit_code == 1  # Click confirmation returns 1 when cancelled
         mock_config.reset_settings.assert_not_called()
 
-    @patch("claude_setup.cli.ConfigManager")
+    @patch.object(cli_module, "ConfigManager")
     def test_reset_config_manager_exception(self, mock_config_class):
         """Test reset when ConfigManager raises exception."""
         # Arrange
@@ -442,7 +447,7 @@ class TestResetCommand:
         assert result.exit_code == 0
         assert "Reset Claude Bedrock configuration" in result.output
 
-    @patch("claude_setup.cli.ConfigManager")
+    @patch.object(cli_module, "ConfigManager")
     def test_reset_keyboard_interrupt(self, mock_config_class):
         """Test reset with keyboard interrupt during confirmation."""
         # Arrange
