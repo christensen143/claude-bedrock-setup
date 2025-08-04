@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Any
 
 from ._version import __version__
+
 __author__ = "Chris Christensen"
 __author_email__ = "chris@nexusweblabs.com"
 __license__ = "MIT"
