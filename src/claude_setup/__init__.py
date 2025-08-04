@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
-__version__ = "0.1.0"
+from ._version import __version__
 __author__ = "Chris Christensen"
 __author_email__ = "chris@nexusweblabs.com"
 __license__ = "MIT"

@@ -2,10 +2,10 @@ import os
 from setuptools import setup, find_packages
 
 
-# Read version from __init__.py
+# Read version from _version.py
 def get_version():
     version = {}
-    with open(os.path.join("src", "claude_setup", "__init__.py")) as f:
+    with open(os.path.join("src", "claude_setup", "_version.py")) as f:
         exec(f.read(), version)
     return version["__version__"]
 
