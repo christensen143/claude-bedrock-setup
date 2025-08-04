@@ -299,7 +299,7 @@ class TestErrorHandlingIntegration:
 
                 finally:
                     # Restore permissions for cleanup
-                    os.chmod(claude_dir, 0o755)
+                    os.chmod(claude_dir, 0o700)
 
             finally:
                 os.chdir(original_dir)
