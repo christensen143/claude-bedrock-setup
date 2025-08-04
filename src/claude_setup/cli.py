@@ -12,11 +12,9 @@ from .aws_client import BedrockClient
 from .config_manager import ConfigManager
 from .gitignore_manager import ensure_gitignore
 
-# Disable color output in tests or when NO_COLOR is set
-no_color = os.environ.get("NO_COLOR") or os.environ.get("PYTEST_CURRENT_TEST")
-console = Console(
-    force_terminal=True if not no_color else False, no_color=bool(no_color)
-)
+# Create console with proper terminal detection
+# Click's CliRunner provides a terminal that doesn't support color
+console = Console()
 
 
 @click.group()
