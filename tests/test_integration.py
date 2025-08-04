@@ -19,7 +19,7 @@ class TestEndToEndWorkflow:
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
 
     @patch("claude_setup.cli.ensure_gitignore")
     @patch("claude_setup.cli.check_aws_auth")
@@ -194,7 +194,7 @@ class TestErrorHandlingIntegration:
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
 
     @patch("claude_setup.cli.check_aws_auth")
     def test_auth_failure_workflow(self, mock_auth):

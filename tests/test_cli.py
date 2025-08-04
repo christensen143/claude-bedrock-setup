@@ -13,7 +13,7 @@ class TestCLI:
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
 
     def test_cli_version(self):
         """Test CLI version option."""
@@ -36,7 +36,7 @@ class TestSetupCommand:
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
 
     @patch("claude_setup.cli.ensure_gitignore")
     @patch("claude_setup.cli.ConfigManager")
@@ -291,7 +291,7 @@ class TestStatusCommand:
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
 
     @patch("claude_setup.cli.ConfigManager")
     def test_status_no_configuration(self, mock_config_class):
@@ -392,7 +392,7 @@ class TestResetCommand:
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
 
     @patch("claude_setup.cli.ConfigManager")
     def test_reset_confirmed(self, mock_config_class):
@@ -461,7 +461,7 @@ class TestCLIIntegration:
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
 
     def test_cli_help_shows_all_commands(self):
         """Test that CLI help shows all available commands."""

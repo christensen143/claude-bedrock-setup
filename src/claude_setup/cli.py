@@ -12,9 +12,10 @@ from .aws_client import BedrockClient
 from .config_manager import ConfigManager
 from .gitignore_manager import ensure_gitignore
 
-# Create console - disable color when running in tests
+# Create console - disable color when NO_COLOR is set or in tests
 # Rich needs explicit no_color=True to disable ANSI codes
-console = Console(no_color=True if os.environ.get("PYTEST_CURRENT_TEST") else None)
+no_color = os.environ.get("NO_COLOR") or os.environ.get("PYTEST_CURRENT_TEST")
+console = Console(no_color=bool(no_color))
 
 
 @click.group()
