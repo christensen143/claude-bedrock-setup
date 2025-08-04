@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import click
 from rich.console import Console
 from rich.panel import Panel
@@ -11,7 +12,9 @@ from .aws_client import BedrockClient
 from .config_manager import ConfigManager
 from .gitignore_manager import ensure_gitignore
 
-console = Console()
+# Disable color output in tests or when NO_COLOR is set
+no_color = os.environ.get("NO_COLOR") or os.environ.get("PYTEST_CURRENT_TEST")
+console = Console(force_terminal=True if not no_color else False, no_color=bool(no_color))
 
 
 @click.group()
