@@ -1,6 +1,6 @@
 # GitHub Secrets Setup Guide
 
-This guide walks you through setting up the required GitHub secrets for the claude-setup CI/CD pipeline.
+This guide walks you through setting up the required GitHub secrets for the claude-bedrock-setup CI/CD pipeline.
 
 ## Required Secrets
 
@@ -12,7 +12,7 @@ This guide walks you through setting up the required GitHub secrets for the clau
   1. Log in to [PyPI](https://pypi.org/)
   2. Go to Account Settings → API tokens
   3. Click "Add API token"
-  4. Name: `claude-setup-github-actions`
+  4. Name: `claude-bedrock-setup-github-actions`
   5. Scope: Project (once first manual upload is done) or Entire account (for first upload)
   6. Copy the token (starts with `pypi-`)
 
@@ -22,7 +22,7 @@ This guide walks you through setting up the required GitHub secrets for the clau
   1. Log in to [TestPyPI](https://test.pypi.org/)
   2. Go to Account Settings → API tokens
   3. Click "Add API token"
-  4. Name: `claude-setup-github-actions-test`
+  4. Name: `claude-bedrock-setup-github-actions-test`
   5. Scope: Entire account (TestPyPI doesn't support project-scoped tokens)
   6. Copy the token (starts with `pypi-`)
 

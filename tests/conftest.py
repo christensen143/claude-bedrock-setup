@@ -1,4 +1,4 @@
-"""Pytest configuration and shared fixtures for claude-setup tests."""
+"""Pytest configuration and shared fixtures for claude-bedrock-setup tests."""
 
 import json
 import tempfile

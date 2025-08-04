@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2024-08-04
 
 ### Added
-- Initial release of claude-setup CLI tool
+- Initial release of claude-bedrock-setup CLI tool
 - Interactive setup wizard for Claude Desktop configuration
 - AWS Bedrock authentication and model discovery
 - Support for multiple AWS authentication methods (CLI profiles, SSO, environment variables, IAM roles)
@@ -33,10 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reset functionality for easy reconfiguration
 
 ### Features
-- `claude-setup setup` - Interactive configuration wizard
-- `claude-setup configure` - Manual configuration with specific parameters
-- `claude-setup status` - Check current configuration and AWS authentication
-- `claude-setup reset` - Reset configuration to start fresh
+- `claude-bedrock-setup setup` - Interactive configuration wizard
+- `claude-bedrock-setup configure` - Manual configuration with specific parameters
+- `claude-bedrock-setup status` - Check current configuration and AWS authentication
+- `claude-bedrock-setup reset` - Reset configuration to start fresh
 
 ### Supported
 - Python 3.7+

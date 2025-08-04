@@ -1,1 +1,1 @@
-# Test package for claude-setup CLI
+# Test package for claude-bedrock-setup CLI

@@ -1,10 +1,10 @@
-# claude-setup
+# claude-bedrock-setup
 
-[![PyPI version](https://badge.fury.io/py/claude-setup.svg)](https://badge.fury.io/py/claude-setup)
-[![Python Versions](https://img.shields.io/pypi/pyversions/claude-setup.svg)](https://pypi.org/project/claude-setup/)
+[![PyPI version](https://badge.fury.io/py/claude-bedrock-setup.svg)](https://badge.fury.io/py/claude-bedrock-setup)
+[![Python Versions](https://img.shields.io/pypi/pyversions/claude-bedrock-setup.svg)](https://pypi.org/project/claude-bedrock-setup/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://github.com/christensen143/claude-setup/actions/workflows/ci.yml/badge.svg)](https://github.com/christensen143/claude-setup/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-98%25-brightgreen.svg)](https://github.com/christensen143/claude-setup)
+[![Tests](https://github.com/christensen143/claude-bedrock-setup/actions/workflows/ci.yml/badge.svg)](https://github.com/christensen143/claude-bedrock-setup/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-98%25-brightgreen.svg)](https://github.com/christensen143/claude-bedrock-setup)
 
 A command-line tool to configure Claude Desktop to use AWS Bedrock as its AI provider. This tool simplifies the process of discovering available Claude models in your AWS account and automatically configures Claude Desktop with the appropriate settings.
 
@@ -29,26 +29,27 @@ A command-line tool to configure Claude Desktop to use AWS Bedrock as its AI pro
 ### Via pip (recommended)
 
 ```bash
-pip install claude-setup
+pip install claude-bedrock-setup
 ```
 
 ### Via pipenv
 
 ```bash
-pipenv install claude-setup
+pipenv install claude-bedrock-setup
 ```
 
 ### From source
 
 ```bash
-git clone https://github.com/christensen143/claude-setup.git
-cd claude-setup
+git clone https://github.com/christensen143/claude-bedrock-setup.git
+cd claude-bedrock-setup
 pip install -e .
 ```
 
 ## Quick Start
 
 1. **Ensure AWS authentication is configured:**
+
    ```bash
    aws configure
    # or
@@ -56,8 +57,9 @@ pip install -e .
    ```
 
 2. **Run the setup wizard:**
+
    ```bash
-   claude-setup setup
+   claude-bedrock-setup setup
    ```
 
 3. **Follow the interactive prompts** to select your preferred Claude model
@@ -71,10 +73,11 @@ That's it! Claude Desktop is now configured to use AWS Bedrock.
 The easiest way to configure Claude is using the interactive setup wizard:
 
 ```bash
-claude-setup setup
+claude-bedrock-setup setup
 ```
 
 This will:
+
 1. Verify your AWS authentication
 2. List available Claude models in your account
 3. Let you select your preferred model
@@ -85,7 +88,7 @@ This will:
 If you prefer to configure specific settings manually:
 
 ```bash
-claude-setup configure --model <model-arn> --region us-west-2
+claude-bedrock-setup configure --model <model-arn> --region us-west-2
 ```
 
 ### Check Current Configuration
@@ -93,10 +96,11 @@ claude-setup configure --model <model-arn> --region us-west-2
 To view your current configuration:
 
 ```bash
-claude-setup status
+claude-bedrock-setup status
 ```
 
 Example output:
+
 ```
 Claude Bedrock Configuration Status
 ===================================
@@ -104,7 +108,7 @@ Claude Bedrock Configuration Status
 ✅ AWS Authentication: Valid
    Account: 123456789012
    User: user@example.com
-   
+
 ✅ Configuration File: .claude/settings.local.json
 
 Current Settings:
@@ -118,7 +122,7 @@ Current Settings:
 To reset your configuration:
 
 ```bash
-claude-setup reset
+claude-bedrock-setup reset
 ```
 
 ## Configuration Details
@@ -139,7 +143,7 @@ The tool also automatically updates your `.gitignore` to exclude the settings fi
 
 ## AWS Authentication
 
-claude-setup supports all standard AWS authentication methods:
+claude-bedrock-setup supports all standard AWS authentication methods:
 
 - **AWS CLI profiles**: `aws configure`
 - **AWS SSO**: `aws sso login --profile your-profile`
@@ -177,7 +181,7 @@ This usually means your AWS account doesn't have access to Claude models in Bedr
 3. Go to Model Access
 4. Request access to Anthropic Claude models
 5. Wait for approval (usually immediate)
-6. Run `claude-setup setup` again
+6. Run `claude-bedrock-setup setup` again
 
 ### "Access Denied" errors
 
@@ -186,12 +190,13 @@ If you're using AWS SSO or assumed roles, ensure your profile is active:
 ```bash
 aws sso login --profile your-profile
 export AWS_PROFILE=your-profile
-claude-setup setup
+claude-bedrock-setup setup
 ```
 
 ### Region-specific issues
 
 Some AWS regions don't support Bedrock. Supported regions include:
+
 - us-east-1 (N. Virginia)
 - us-west-2 (Oregon)
 - eu-west-1 (Ireland)
@@ -200,7 +205,7 @@ Some AWS regions don't support Bedrock. Supported regions include:
 Use the `--region` flag to specify a different region:
 
 ```bash
-claude-setup setup --region us-east-1
+claude-bedrock-setup setup --region us-east-1
 ```
 
 ## Development
@@ -208,8 +213,8 @@ claude-setup setup --region us-east-1
 ### Setting up for development
 
 ```bash
-git clone https://github.com/christensen143/claude-setup.git
-cd claude-setup
+git clone https://github.com/christensen143/claude-bedrock-setup.git
+cd claude-bedrock-setup
 make install-dev
 ```
 
@@ -244,6 +249,7 @@ Contributions are welcome! Please follow these steps:
 7. Open a Pull Request
 
 Please ensure:
+
 - All tests pass
 - Code coverage remains above 95%
 - Code follows the project style (run `make format`)
@@ -261,9 +267,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/christensen143/claude-setup/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/christensen143/claude-setup/discussions)
-- **Security**: For security issues, please email security@yourdomain.com
+- **Issues**: [GitHub Issues](https://github.com/christensen143/claude-bedrock-setup/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/christensen143/claude-bedrock-setup/discussions)
+- **Security**: For security issues, please email security@nexusweblabs.com
 
 ## Changelog
 

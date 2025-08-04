@@ -1,6 +1,6 @@
-# Testing Documentation for claude-setup CLI
+# Testing Documentation for claude-bedrock-setup CLI
 
-This document describes the comprehensive test suite for the claude-setup CLI application.
+This document describes the comprehensive test suite for the claude-bedrock-setup CLI application.
 
 ## Test Coverage
 

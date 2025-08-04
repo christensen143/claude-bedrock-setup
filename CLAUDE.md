@@ -23,15 +23,15 @@ pipenv shell
 ### Running the CLI
 ```bash
 # Run the CLI directly (after pipenv shell)
-claude-setup setup
+claude-bedrock-setup setup
 
 # Run without activating the environment
-pipenv run claude-setup setup
+pipenv run claude-bedrock-setup setup
 
 # Available commands
-claude-setup setup      # Interactive setup wizard
-claude-setup status     # Show current configuration
-claude-setup reset      # Reset configuration
+claude-bedrock-setup setup      # Interactive setup wizard
+claude-bedrock-setup status     # Show current configuration
+claude-bedrock-setup reset      # Reset configuration
 ```
 
 ### Development and Testing

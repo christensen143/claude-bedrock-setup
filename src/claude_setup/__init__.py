@@ -8,10 +8,10 @@ and making it easy to get started with Claude on AWS.
 
 __version__ = "0.1.0"
 __author__ = "Chris Christensen"
-__author_email__ = "chris.christensen@example.com"
+__author_email__ = "chris@nexusweblabs.com"
 __license__ = "MIT"
 __description__ = "CLI tool to configure Claude Desktop for AWS Bedrock"
-__url__ = "https://github.com/christensen143/claude-setup"
+__url__ = "https://github.com/christensen143/claude-bedrock-setup"
 
 # Lazy imports to avoid import issues during setup
 def __getattr__(name):

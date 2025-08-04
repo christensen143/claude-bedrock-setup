@@ -1,4 +1,4 @@
-"""Test utilities and helper functions for claude-setup tests."""
+"""Test utilities and helper functions for claude-bedrock-setup tests."""
 
 import json
 import tempfile

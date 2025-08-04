@@ -13,7 +13,7 @@ console = Console()
 
 
 @click.group()
-@click.version_option(version="0.1.0", prog_name="claude-setup")
+@click.version_option(version="0.1.0", prog_name="claude-bedrock-setup")
 def cli():
     """Claude Bedrock Setup CLI - Configure Claude to use AWS Bedrock"""
     pass

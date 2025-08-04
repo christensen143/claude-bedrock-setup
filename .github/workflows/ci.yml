@@ -144,7 +144,7 @@ jobs:
     - name: Test package installation
       run: |
         pip install dist/*.whl
-        claude-setup --version
+        claude-bedrock-setup --version
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
@@ -183,8 +183,8 @@ jobs:
     - name: Run integration tests
       run: |
         # Test CLI commands without actual AWS calls
-        claude-setup --help
-        claude-setup --version
+        claude-bedrock-setup --help
+        claude-bedrock-setup --version
         
     - name: Test package imports
       run: |

@@ -3,10 +3,10 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "claude-setup"
+name = "claude-bedrock-setup"
 version = "0.1.0"
 # dynamic = ["version"]  # Commented out for bump2version compatibility
-description = "CLI tool to configure Claude Desktop for AWS Bedrock"
+description = "CLI tool to configure Claude Code for AWS Bedrock"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
@@ -75,14 +75,14 @@ test = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/christensen143/claude-setup"
-"Bug Tracker" = "https://github.com/christensen143/claude-setup/issues"
-"Documentation" = "https://github.com/christensen143/claude-setup#readme"
-"Source Code" = "https://github.com/christensen143/claude-setup"
-"Changelog" = "https://github.com/christensen143/claude-setup/blob/main/CHANGELOG.md"
+"Homepage" = "https://github.com/christensen143/claude-bedrock-setup"
+"Bug Tracker" = "https://github.com/christensen143/claude-bedrock-setup/issues"
+"Documentation" = "https://github.com/christensen143/claude-bedrock-setup#readme"
+"Source Code" = "https://github.com/christensen143/claude-bedrock-setup"
+"Changelog" = "https://github.com/christensen143/claude-bedrock-setup/blob/main/CHANGELOG.md"
 
 [project.scripts]
-claude-setup = "claude_setup.cli:cli"
+claude-bedrock-setup = "claude_setup.cli:cli"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

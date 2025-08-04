@@ -150,7 +150,7 @@ jobs:
     - name: Test package installation
       run: |
         pip install dist/*.whl
-        claude-setup --version
+        claude-bedrock-setup --version
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
@@ -210,7 +210,7 @@ jobs:
         ## Installation
         
         \`\`\`bash
-        pip install claude-setup==${{ needs.validate-tag.outputs.version }}
+        pip install claude-bedrock-setup==${{ needs.validate-tag.outputs.version }}
         \`\`\`
         
         ## Verification
@@ -251,7 +251,7 @@ jobs:
     timeout-minutes: 10
     environment:
       name: testpypi
-      url: https://test.pypi.org/project/claude-setup/
+      url: https://test.pypi.org/project/claude-bedrock-setup/
     permissions:
       id-token: write
       
@@ -271,7 +271,7 @@ jobs:
     - name: Verify TestPyPI publication
       run: |
         sleep 60  # Wait for TestPyPI to update
-        pip index versions claude-setup --index-url https://test.pypi.org/simple/ --timeout 30 || true
+        pip index versions claude-bedrock-setup --index-url https://test.pypi.org/simple/ --timeout 30 || true
 
   publish-pypi:
     name: Publish to PyPI
@@ -280,7 +280,7 @@ jobs:
     timeout-minutes: 10
     environment:
       name: pypi
-      url: https://pypi.org/project/claude-setup/
+      url: https://pypi.org/project/claude-bedrock-setup/
     permissions:
       id-token: write
       
@@ -299,7 +299,7 @@ jobs:
     - name: Verify PyPI publication
       run: |
         sleep 120  # Wait for PyPI to update
-        pip index versions claude-setup --timeout 60 || true
+        pip index versions claude-bedrock-setup --timeout 60 || true
 
   post-release:
     name: Post-Release Tasks
@@ -319,12 +319,12 @@ jobs:
         echo "### 📦 Package Information" >> $GITHUB_STEP_SUMMARY
         echo "- Version: ${{ needs.validate-tag.outputs.version }}" >> $GITHUB_STEP_SUMMARY
         echo "- Prerelease: ${{ needs.validate-tag.outputs.is_prerelease }}" >> $GITHUB_STEP_SUMMARY
-        echo "- PyPI: https://pypi.org/project/claude-setup/${{ needs.validate-tag.outputs.version }}/" >> $GITHUB_STEP_SUMMARY
-        echo "- TestPyPI: https://test.pypi.org/project/claude-setup/${{ needs.validate-tag.outputs.version }}/" >> $GITHUB_STEP_SUMMARY
+        echo "- PyPI: https://pypi.org/project/claude-bedrock-setup/${{ needs.validate-tag.outputs.version }}/" >> $GITHUB_STEP_SUMMARY
+        echo "- TestPyPI: https://test.pypi.org/project/claude-bedrock-setup/${{ needs.validate-tag.outputs.version }}/" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 🚀 Installation" >> $GITHUB_STEP_SUMMARY
         echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-        echo "pip install claude-setup==${{ needs.validate-tag.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "pip install claude-bedrock-setup==${{ needs.validate-tag.outputs.version }}" >> $GITHUB_STEP_SUMMARY
         echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
         
     - name: Notify on failure

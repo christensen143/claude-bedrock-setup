@@ -17,19 +17,19 @@ def get_long_description():
         return "A command-line tool to configure Claude Desktop to use AWS Bedrock as its AI provider."
 
 setup(
-    name="claude-setup",
+    name="claude-bedrock-setup",
     version=get_version(),
     author="Chris Christensen",
     author_email="chris.christensen@example.com",
     description="CLI tool to configure Claude Desktop for AWS Bedrock",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
-    url="https://github.com/christensen143/claude-setup",
+    url="https://github.com/christensen143/claude-bedrock-setup",
     project_urls={
-        "Bug Tracker": "https://github.com/christensen143/claude-setup/issues",
-        "Documentation": "https://github.com/christensen143/claude-setup#readme",
-        "Source Code": "https://github.com/christensen143/claude-setup",
-        "Changelog": "https://github.com/christensen143/claude-setup/blob/main/CHANGELOG.md",
+        "Bug Tracker": "https://github.com/christensen143/claude-bedrock-setup/issues",
+        "Documentation": "https://github.com/christensen143/claude-bedrock-setup#readme",
+        "Source Code": "https://github.com/christensen143/claude-bedrock-setup",
+        "Changelog": "https://github.com/christensen143/claude-bedrock-setup/blob/main/CHANGELOG.md",
     },
     packages=find_packages(where="src"),
     package_dir={"": "src"},
@@ -90,7 +90,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "claude-setup=claude_setup.cli:cli",
+            "claude-bedrock-setup=claude_setup.cli:cli",
         ],
     },
     include_package_data=True,

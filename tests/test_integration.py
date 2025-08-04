@@ -1,4 +1,4 @@
-"""Integration tests for the claude-setup application."""
+"""Integration tests for the claude-bedrock-setup application."""
 
 import json
 import os

@@ -21,7 +21,7 @@ class TestCLI:
         """Test CLI version option."""
         result = self.runner.invoke(cli, ['--version'])
         assert result.exit_code == 0
-        assert "claude-setup, version 0.1.0" in result.output
+        assert "claude-bedrock-setup, version 0.1.0" in result.output
 
     def test_cli_help(self):
         """Test CLI help."""
@@ -261,7 +261,7 @@ class TestStatusCommand:
         # Assert
         assert result.exit_code == 0
         assert "No configuration found." in result.output
-        assert "Run 'claude-setup setup'" in result.output
+        assert "Run 'claude-bedrock-setup setup'" in result.output
         mock_config.load_settings.assert_called_once()
 
     @patch('claude_setup.cli.ConfigManager')
