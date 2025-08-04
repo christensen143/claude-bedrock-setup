@@ -80,6 +80,8 @@ jobs:
         pip install -e .[dev,test]
         
     - name: Run full test suite
+      env:
+        NO_COLOR: 1
       run: |
         # Lint
         flake8 src/ tests/ --max-line-length=88
