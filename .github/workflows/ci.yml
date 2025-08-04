@@ -94,10 +94,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .[test]
         
-    - name: Debug CI environment
-      run: |
-        python debug_ci.py
-        
     - name: Run tests with pytest
       run: |
         pytest -v --tb=short --cov=src/claude_setup --cov-report=xml --cov-report=term-missing
