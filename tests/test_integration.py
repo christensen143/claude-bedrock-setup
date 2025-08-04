@@ -259,6 +259,7 @@ class TestErrorHandlingIntegration:
         mock_auth.return_value = True
         # subprocess.run is called when listing models - should raise CalledProcessError
         from subprocess import CalledProcessError
+
         mock_subprocess.side_effect = CalledProcessError(
             1, "aws bedrock", stderr="AccessDeniedException: Not authorized"
         )
@@ -271,11 +272,14 @@ class TestErrorHandlingIntegration:
 
                 # Act
                 result = self.runner.invoke(cli, ["setup", "--non-interactive"])
-                
+
                 # Assert - The exception from BedrockClient causes the CLI to exit
                 assert result.exit_code != 0
                 # The exception message should appear in the result
-                assert "Access denied" in str(result.exception) or "Access denied" in result.output
+                assert (
+                    "Access denied" in str(result.exception)
+                    or "Access denied" in result.output
+                )
 
                 # Verify no configuration was created
                 config_manager = ConfigManager()
