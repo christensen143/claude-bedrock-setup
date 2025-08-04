@@ -19,7 +19,7 @@ A command-line tool to configure Claude Desktop to use AWS Bedrock as its AI pro
 
 ## Prerequisites
 
-- Python 3.7 or higher
+- Python 3.10 or higher
 - AWS CLI configured with valid credentials
 - AWS account with access to Amazon Bedrock
 - Claude Desktop application installed

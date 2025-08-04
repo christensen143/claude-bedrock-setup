@@ -1,12 +1,18 @@
+from __future__ import annotations
+
 import subprocess
 
 
-def check_aws_auth():
+def check_aws_auth() -> bool:
     """Check if AWS credentials are properly configured"""
     try:
         # Use AWS CLI to verify credentials
-        result = subprocess.run(['aws', 'sts', 'get-caller-identity'], 
-                              capture_output=True, text=True, check=True)
+        subprocess.run(
+            ["aws", "sts", "get-caller-identity"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
         return True
     except subprocess.CalledProcessError:
         return False
