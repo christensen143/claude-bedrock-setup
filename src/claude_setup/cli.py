@@ -14,7 +14,9 @@ from .gitignore_manager import ensure_gitignore
 
 # Disable color output in tests or when NO_COLOR is set
 no_color = os.environ.get("NO_COLOR") or os.environ.get("PYTEST_CURRENT_TEST")
-console = Console(force_terminal=True if not no_color else False, no_color=bool(no_color))
+console = Console(
+    force_terminal=True if not no_color else False, no_color=bool(no_color)
+)
 
 
 @click.group()
