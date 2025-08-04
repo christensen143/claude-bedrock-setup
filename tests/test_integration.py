@@ -10,6 +10,11 @@ from unittest.mock import patch, MagicMock
 import pytest
 from click.testing import CliRunner
 
+# Import modules to ensure they're in sys.modules
+import claude_setup.cli
+import claude_setup.auth_checker
+import claude_setup.aws_client
+
 from claude_setup.cli import cli
 from claude_setup.config_manager import ConfigManager
 from claude_setup.gitignore_manager import ensure_gitignore
@@ -22,8 +27,8 @@ class TestEndToEndWorkflow:
         """Set up test fixtures."""
         self.runner = CliRunner(env={"NO_COLOR": "1"})
 
-    @patch("claude_setup.cli.ensure_gitignore")
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch.object(sys.modules["claude_setup.cli"], "ensure_gitignore")
+    @patch.object(sys.modules["claude_setup.auth_checker"], "check_aws_auth")
     @patch("claude_setup.aws_client.subprocess.run")
     def test_complete_setup_workflow(
         self, mock_subprocess, mock_auth, mock_gitignore, mock_aws_response
@@ -71,7 +76,7 @@ class TestEndToEndWorkflow:
             assert status_after_reset.exit_code == 0
             assert "No configuration found" in status_after_reset.output
 
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch.object(sys.modules["claude_setup.auth_checker"], "check_aws_auth")
     @patch("claude_setup.aws_client.subprocess.run")
     def test_setup_with_different_regions(
         self, mock_subprocess, mock_auth, mock_aws_response
@@ -213,7 +218,7 @@ class TestErrorHandlingIntegration:
         """Set up test fixtures."""
         self.runner = CliRunner(env={"NO_COLOR": "1"})
 
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch.object(sys.modules["claude_setup.auth_checker"], "check_aws_auth")
     @pytest.mark.skipif(
         sys.platform == "win32", reason="Temporary directory cleanup issues on Windows"
     )
@@ -243,7 +248,7 @@ class TestErrorHandlingIntegration:
             finally:
                 os.chdir(original_dir)
 
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch.object(sys.modules["claude_setup.auth_checker"], "check_aws_auth")
     @patch("claude_setup.aws_client.subprocess.run")
     @pytest.mark.skipif(
         sys.platform == "win32", reason="Temporary directory cleanup issues on Windows"
