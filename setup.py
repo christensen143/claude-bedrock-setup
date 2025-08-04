@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 # Read version from _version.py
 def get_version():
     version = {}
-    with open(os.path.join("src", "claude_setup", "_version.py")) as f:
+    with open(os.path.join("src", "claude_setup", "_version.py"), "r", encoding="utf-8") as f:
         exec(f.read(), version)
     return version["__version__"]
 
