@@ -1,0 +1,335 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v1.0.0)'
+        required: true
+        type: string
+
+env:
+  PYTHONUNBUFFERED: 1
+  FORCE_COLOR: 1
+
+jobs:
+  validate-tag:
+    name: Validate Release Tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.extract.outputs.version }}
+      is_prerelease: ${{ steps.extract.outputs.is_prerelease }}
+      
+    steps:
+    - name: Extract version from tag
+      id: extract
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          TAG="${{ github.event.inputs.tag }}"
+        else
+          TAG="${{ github.ref_name }}"
+        fi
+        
+        echo "Processing tag: $TAG"
+        
+        # Validate tag format
+        if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$ ]]; then
+          echo "❌ Invalid tag format: $TAG"
+          echo "Expected format: v<major>.<minor>.<patch>[-<prerelease>]"
+          exit 1
+        fi
+        
+        # Extract version without 'v' prefix
+        VERSION=${TAG#v}
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        
+        # Check if prerelease
+        if [[ "$VERSION" =~ -.*$ ]]; then
+          echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          echo "📋 Detected prerelease: $VERSION"
+        else
+          echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          echo "📋 Detected stable release: $VERSION"
+        fi
+
+  test-suite:
+    name: Full Test Suite
+    runs-on: ubuntu-latest
+    needs: validate-tag
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev,test]
+        
+    - name: Run full test suite
+      run: |
+        # Lint
+        flake8 src/ tests/ --max-line-length=88
+        black --check src/ tests/
+        mypy src/
+        
+        # Security
+        bandit -r src/ --severity-level medium
+        safety check
+        
+        # Tests
+        pytest -v --cov=claude_setup --cov-report=xml --cov-fail-under=90
+        
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: release
+        name: release-coverage
+
+  build-package:
+    name: Build Release Package
+    runs-on: ubuntu-latest
+    needs: [validate-tag, test-suite]
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        
+    - name: Verify version consistency
+      run: |
+        EXPECTED_VERSION="${{ needs.validate-tag.outputs.version }}"
+        PACKAGE_VERSION=$(python -c "import sys; sys.path.insert(0, 'src'); from claude_setup import __version__; print(__version__)")
+        
+        echo "Expected version: $EXPECTED_VERSION"
+        echo "Package version: $PACKAGE_VERSION"
+        
+        if [[ "$PACKAGE_VERSION" != "$EXPECTED_VERSION" ]]; then
+          echo "❌ Version mismatch!"
+          echo "Package version ($PACKAGE_VERSION) does not match tag version ($EXPECTED_VERSION)"
+          exit 1
+        fi
+        
+        echo "✅ Version consistency verified"
+        
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+        
+    - name: Build package
+      run: |
+        python -m build
+        
+    - name: Verify package
+      run: |
+        twine check dist/*
+        
+    - name: Test package installation
+      run: |
+        pip install dist/*.whl
+        claude-setup --version
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-distributions
+        path: dist/
+        retention-days: 90
+
+  create-github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate-tag, build-package]
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: release-distributions
+        path: dist/
+        
+    - name: Generate changelog
+      id: changelog
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          TAG="${{ github.event.inputs.tag }}"
+        else
+          TAG="${{ github.ref_name }}"
+        fi
+        
+        echo "Generating changelog for $TAG"
+        
+        # Get previous tag
+        PREV_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+        
+        if [[ -n "$PREV_TAG" ]]; then
+          echo "Previous tag: $PREV_TAG"
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" "$PREV_TAG..HEAD" --no-merges)
+        else
+          echo "No previous tag found, including all commits"
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
+        fi
+        
+        # Create changelog file
+        cat > CHANGELOG_RELEASE.md << EOF
+        ## What's Changed
+        
+        $CHANGELOG
+        
+        ## Installation
+        
+        \`\`\`bash
+        pip install claude-setup==${{ needs.validate-tag.outputs.version }}
+        \`\`\`
+        
+        ## Verification
+        
+        You can verify the integrity of the package by checking the checksums:
+        
+        EOF
+        
+        # Add checksums
+        echo "### Checksums" >> CHANGELOG_RELEASE.md
+        echo "\`\`\`" >> CHANGELOG_RELEASE.md
+        cd dist/
+        for file in *; do
+          echo "$(sha256sum "$file")" >> ../CHANGELOG_RELEASE.md
+        done
+        echo "\`\`\`" >> ../CHANGELOG_RELEASE.md
+        cd ..
+        
+        echo "changelog-file=CHANGELOG_RELEASE.md" >> $GITHUB_OUTPUT
+        
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}
+        name: Release ${{ needs.validate-tag.outputs.version }}
+        body_path: ${{ steps.changelog.outputs.changelog-file }}
+        files: |
+          dist/*
+        prerelease: ${{ needs.validate-tag.outputs.is_prerelease == 'true' }}
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-testpypi:
+    name: Publish to TestPyPI
+    runs-on: ubuntu-latest
+    needs: [validate-tag, create-github-release]
+    timeout-minutes: 10
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/claude-setup/
+    permissions:
+      id-token: write
+      
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: release-distributions
+        path: dist/
+        
+    - name: Publish to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+        skip-existing: true
+        
+    - name: Verify TestPyPI publication
+      run: |
+        sleep 60  # Wait for TestPyPI to update
+        pip index versions claude-setup --index-url https://test.pypi.org/simple/ --timeout 30 || true
+
+  publish-pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: [validate-tag, publish-testpypi]
+    timeout-minutes: 10
+    environment:
+      name: pypi
+      url: https://pypi.org/project/claude-setup/
+    permissions:
+      id-token: write
+      
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: release-distributions
+        path: dist/
+        
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        skip-existing: true
+        
+    - name: Verify PyPI publication
+      run: |
+        sleep 120  # Wait for PyPI to update
+        pip index versions claude-setup --timeout 60 || true
+
+  post-release:
+    name: Post-Release Tasks
+    runs-on: ubuntu-latest
+    needs: [validate-tag, publish-pypi]
+    timeout-minutes: 10
+    if: always() && needs.publish-pypi.result == 'success'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Create release summary
+      run: |
+        echo "## 🎉 Release ${{ needs.validate-tag.outputs.version }} Published Successfully!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📦 Package Information" >> $GITHUB_STEP_SUMMARY
+        echo "- Version: ${{ needs.validate-tag.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Prerelease: ${{ needs.validate-tag.outputs.is_prerelease }}" >> $GITHUB_STEP_SUMMARY
+        echo "- PyPI: https://pypi.org/project/claude-setup/${{ needs.validate-tag.outputs.version }}/" >> $GITHUB_STEP_SUMMARY
+        echo "- TestPyPI: https://test.pypi.org/project/claude-setup/${{ needs.validate-tag.outputs.version }}/" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🚀 Installation" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+        echo "pip install claude-setup==${{ needs.validate-tag.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "## ❌ Release ${{ needs.validate-tag.outputs.version }} Failed!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Please check the workflow logs for details." >> $GITHUB_STEP_SUMMARY

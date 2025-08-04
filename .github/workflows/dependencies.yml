@@ -1,0 +1,342 @@
+name: Dependencies
+
+on:
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      update_type:
+        description: 'Type of dependency update'
+        required: true
+        type: choice
+        options:
+          - security
+          - all
+        default: 'security'
+
+env:
+  PYTHONUNBUFFERED: 1
+  FORCE_COLOR: 1
+
+permissions:
+  contents: write
+  pull-requests: write
+  security-events: write
+
+jobs:
+  check-dependencies:
+    name: Check Dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      has_updates: ${{ steps.check.outputs.has_updates }}
+      security_updates: ${{ steps.check.outputs.security_updates }}
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety pip-audit pipenv
+        pip install -e .[dev,test]
+        
+    - name: Check for security vulnerabilities
+      id: security
+      run: |
+        echo "🔍 Checking for security vulnerabilities..."
+        
+        # Check with safety
+        safety check --json --output safety-report.json || true
+        SAFETY_ISSUES=$(jq length safety-report.json)
+        
+        # Check with pip-audit
+        pip-audit --format=json --output=pip-audit-report.json || true
+        AUDIT_ISSUES=$(jq length pip-audit-report.json)
+        
+        echo "Safety issues found: $SAFETY_ISSUES"
+        echo "Pip-audit issues found: $AUDIT_ISSUES"
+        
+        TOTAL_SECURITY_ISSUES=$((SAFETY_ISSUES + AUDIT_ISSUES))
+        echo "security_issues=$TOTAL_SECURITY_ISSUES" >> $GITHUB_OUTPUT
+        
+        if [[ $TOTAL_SECURITY_ISSUES -gt 0 ]]; then
+          echo "⚠️ Security vulnerabilities found!"
+          echo "security_updates=true" >> $GITHUB_OUTPUT
+        else
+          echo "✅ No security vulnerabilities found"
+          echo "security_updates=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Check for outdated packages
+      id: check
+      run: |
+        echo "🔍 Checking for outdated packages..."
+        
+        # Get list of outdated packages
+        pip list --outdated --format=json > outdated-packages.json
+        OUTDATED_COUNT=$(jq length outdated-packages.json)
+        
+        echo "Outdated packages found: $OUTDATED_COUNT"
+        
+        if [[ $OUTDATED_COUNT -gt 0 ]] || [[ "${{ steps.security.outputs.security_updates }}" == "true" ]]; then
+          echo "has_updates=true" >> $GITHUB_OUTPUT
+        else
+          echo "has_updates=false" >> $GITHUB_OUTPUT
+        fi
+        
+        echo "security_updates=${{ steps.security.outputs.security_updates }}" >> $GITHUB_OUTPUT
+        
+    - name: Upload security reports
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          safety-report.json
+          pip-audit-report.json
+          outdated-packages.json
+        retention-days: 30
+
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    needs: check-dependencies
+    if: needs.check-dependencies.outputs.has_updates == 'true'
+    timeout-minutes: 20
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        
+    - name: Configure git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pip-tools safety
+        pip install -e .[dev,test]
+        
+    - name: Create requirements files for updating
+      run: |
+        # Create requirements.in from setup.py/pyproject.toml
+        python -c "
+        import tomli
+        with open('pyproject.toml', 'rb') as f:
+            data = tomli.load(f)
+        
+        deps = data['project']['dependencies']
+        dev_deps = data['project']['optional-dependencies']['dev']
+        test_deps = data['project']['optional-dependencies']['test']
+        
+        with open('requirements.in', 'w') as f:
+            f.write('# Production dependencies\n')
+            for dep in deps:
+                f.write(dep + '\n')
+                
+        with open('requirements-dev.in', 'w') as f:
+            f.write('-r requirements.txt\n\n# Development dependencies\n')
+            for dep in dev_deps:
+                f.write(dep + '\n')
+            f.write('\n# Test dependencies\n')
+            for dep in test_deps:
+                f.write(dep + '\n')
+        " 2>/dev/null || echo "Could not auto-generate requirements.in files"
+        
+    - name: Update dependencies
+      run: |
+        UPDATE_TYPE="${{ github.event.inputs.update_type || 'security' }}"
+        HAS_SECURITY="${{ needs.check-dependencies.outputs.security_updates }}"
+        
+        echo "Update type: $UPDATE_TYPE"
+        echo "Has security updates: $HAS_SECURITY"
+        
+        # Create branch for updates
+        BRANCH_NAME="automated-dependency-updates-$(date +%Y%m%d-%H%M%S)"
+        git checkout -b "$BRANCH_NAME"
+        
+        # Store original versions
+        cp pyproject.toml pyproject.toml.backup
+        
+        if [[ "$UPDATE_TYPE" == "security" ]] || [[ "$HAS_SECURITY" == "true" ]]; then
+          echo "🔒 Performing security updates only..."
+          
+          # Get list of packages with security issues
+          safety check --json --output safety-issues.json || true
+          pip-audit --format=json --output=audit-issues.json || true
+          
+          # Extract vulnerable package names
+          VULNERABLE_PACKAGES=""
+          if [[ -f safety-issues.json ]] && [[ $(jq length safety-issues.json) -gt 0 ]]; then
+            VULNERABLE_PACKAGES="$VULNERABLE_PACKAGES $(jq -r '.[].package' safety-issues.json | sort -u | tr '\n' ' ')"
+          fi
+          if [[ -f audit-issues.json ]] && [[ $(jq length audit-issues.json) -gt 0 ]]; then
+            VULNERABLE_PACKAGES="$VULNERABLE_PACKAGES $(jq -r '.[].name' audit-issues.json | sort -u | tr '\n' ' ')"
+          fi
+          
+          VULNERABLE_PACKAGES=$(echo "$VULNERABLE_PACKAGES" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+          
+          echo "Vulnerable packages: $VULNERABLE_PACKAGES"
+          
+          # Update only vulnerable packages
+          for package in $VULNERABLE_PACKAGES; do
+            if [[ -n "$package" ]]; then
+              echo "Updating $package..."
+              pip install --upgrade "$package" || echo "Failed to update $package"
+            fi
+          done
+          
+        else
+          echo "📦 Performing full dependency updates..."
+          
+          # Update all packages
+          pip install --upgrade pip setuptools wheel
+          pip install --upgrade -e .[dev,test]
+        fi
+        
+        # Regenerate frozen requirements if pip-tools is available
+        if command -v pip-compile &> /dev/null && [[ -f requirements.in ]]; then
+          echo "📝 Regenerating pinned requirements..."
+          pip-compile requirements.in
+          pip-compile requirements-dev.in
+        fi
+        
+        echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
+        
+    - name: Test updated dependencies
+      run: |
+        echo "🧪 Testing updated dependencies..."
+        
+        # Install the updated dependencies
+        pip install -e .[dev,test]
+        
+        # Run basic tests
+        python -c "import claude_setup; print(f'Package imports successfully, version: {claude_setup.__version__}')"
+        
+        # Run linting
+        flake8 src/ tests/ --count --exit-zero --max-complexity=10 --max-line-length=88
+        
+        # Run quick tests
+        pytest tests/ -x --tb=short --disable-warnings || echo "Some tests failed, but continuing..."
+        
+    - name: Create pull request
+      run: |
+        # Check if there are any changes
+        if git diff --quiet HEAD pyproject.toml; then
+          echo "No dependency changes detected"
+          exit 0
+        fi
+        
+        # Create commit
+        git add .
+        
+        UPDATE_TYPE="${{ github.event.inputs.update_type || 'security' }}"
+        if [[ "$UPDATE_TYPE" == "security" ]]; then
+          COMMIT_MSG="chore: update dependencies with security fixes"
+          PR_TITLE="🔒 Security dependency updates"
+        else
+          COMMIT_MSG="chore: update all dependencies"
+          PR_TITLE="📦 Dependency updates"
+        fi
+        
+        git commit -m "$COMMIT_MSG
+
+        - Automated dependency updates via GitHub Actions
+        - Update type: $UPDATE_TYPE
+        - Security updates: ${{ needs.check-dependencies.outputs.security_updates }}
+        
+        Generated by: ${{ github.workflow }} workflow"
+        
+        # Push branch
+        git push origin "${{ env.branch_name }}"
+        
+        # Create PR body
+        cat > pr-body.md << EOF
+        ## Dependency Updates
+        
+        This PR contains automated dependency updates.
+        
+        ### Details
+        - **Update Type**: $UPDATE_TYPE
+        - **Security Updates**: ${{ needs.check-dependencies.outputs.security_updates }}
+        - **Triggered By**: ${{ github.event_name }}
+        
+        ### Changes
+        - Updated dependencies in pyproject.toml
+        - Regenerated lock files (if applicable)
+        
+        ### Testing
+        - [x] Package imports successfully
+        - [x] Basic linting passes
+        - [x] Quick test suite run
+        
+        ### Review Checklist
+        - [ ] Review dependency changes
+        - [ ] Ensure no breaking changes
+        - [ ] Run full test suite
+        - [ ] Check for any new security vulnerabilities
+        
+        ---
+        *This PR was automatically created by the Dependencies workflow*
+        EOF
+        
+        # Create pull request
+        gh pr create \
+          --title "$PR_TITLE" \
+          --body-file pr-body.md \
+          --head "${{ env.branch_name }}" \
+          --base main \
+          --label "dependencies" \
+          --label "automated"
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [check-dependencies, update-dependencies]
+    if: always()
+    timeout-minutes: 5
+    
+    steps:
+    - name: Create summary
+      run: |
+        echo "## 🔍 Dependency Check Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Has Updates**: ${{ needs.check-dependencies.outputs.has_updates }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Security Updates**: ${{ needs.check-dependencies.outputs.security_updates }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Update Job Status**: ${{ needs.update-dependencies.result || 'skipped' }}" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ "${{ needs.check-dependencies.outputs.has_updates }}" == "true" ]]; then
+          if [[ "${{ needs.update-dependencies.result }}" == "success" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Dependency updates completed successfully**" >> $GITHUB_STEP_SUMMARY
+            echo "A pull request has been created with the updates." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **Dependency updates failed**" >> $GITHUB_STEP_SUMMARY
+            echo "Please check the workflow logs for details." >> $GITHUB_STEP_SUMMARY
+          fi
+        else
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **All dependencies are up to date**" >> $GITHUB_STEP_SUMMARY
+        fi

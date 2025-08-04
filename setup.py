@@ -1,22 +1,98 @@
+import os
 from setuptools import setup, find_packages
+
+# Read version from __init__.py
+def get_version():
+    version = {}
+    with open(os.path.join('src', 'claude_setup', '__init__.py')) as f:
+        exec(f.read(), version)
+    return version['__version__']
+
+# Read long description from README.md
+def get_long_description():
+    try:
+        with open('README.md', 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        return "A command-line tool to configure Claude Desktop to use AWS Bedrock as its AI provider."
 
 setup(
     name="claude-setup",
-    version="0.1.0",
+    version=get_version(),
+    author="Chris Christensen",
+    author_email="chris.christensen@example.com",
+    description="CLI tool to configure Claude Desktop for AWS Bedrock",
+    long_description=get_long_description(),
+    long_description_content_type="text/markdown",
+    url="https://github.com/christensen143/claude-setup",
+    project_urls={
+        "Bug Tracker": "https://github.com/christensen143/claude-setup/issues",
+        "Documentation": "https://github.com/christensen143/claude-setup#readme",
+        "Source Code": "https://github.com/christensen143/claude-setup",
+        "Changelog": "https://github.com/christensen143/claude-setup/blob/main/CHANGELOG.md",
+    },
     packages=find_packages(where="src"),
     package_dir={"": "src"},
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "Intended Audience :: System Administrators",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: System :: Installation/Setup",
+        "Topic :: Utilities",
+        "Environment :: Console",
+        "Typing :: Typed",
+    ],
+    keywords=[
+        "claude",
+        "anthropic",
+        "aws",
+        "bedrock",
+        "cli",
+        "configuration",
+        "setup",
+        "ai",
+        "llm",
+        "chatbot",
+    ],
+    python_requires=">=3.7",
     install_requires=[
         "click>=8.1.0",
         "boto3>=1.34.0",
         "rich>=13.7.0",
         "python-dotenv>=1.0.0",
     ],
+    extras_require={
+        "dev": [
+            "pytest>=7.0.0",
+            "pytest-cov>=4.0.0",
+            "pytest-mock>=3.10.0",
+            "black>=23.0.0",
+            "mypy>=1.0.0",
+            "flake8>=6.0.0",
+            "pre-commit>=3.0.0",
+        ],
+        "test": [
+            "pytest>=7.0.0",
+            "pytest-cov>=4.0.0",
+            "pytest-mock>=3.10.0",
+            "moto[bedrock]>=4.2.0",
+        ],
+    },
     entry_points={
         "console_scripts": [
             "claude-setup=claude_setup.cli:cli",
         ],
     },
-    author="Your Name",
-    description="CLI tool to configure Claude for AWS Bedrock",
-    python_requires=">=3.7",
+    include_package_data=True,
+    zip_safe=False,
 )

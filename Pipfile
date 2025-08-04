@@ -8,8 +8,17 @@ click = ">=8.1.0"
 boto3 = ">=1.34.0"
 rich = ">=13.7.0"
 python-dotenv = ">=1.0.0"
+claude-setup = {file = ".", editable = true}
 
 [dev-packages]
+black = "*"
+flake8 = "*"
+mypy = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-mock = "*"
+build = "*"
+twine = "*"
 
 [requires]
 python_version = "3.13"

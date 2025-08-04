@@ -68,3 +68,11 @@ coverage.xml
 # Pipenv
 # Pipfile.lock is intentionally excluded for libraries
 Pipfile.lock
+
+# GitHub Actions
+.github/workflows/test-*.yml
+.github/workflows/local-*.yml
+
+# Release artifacts
+dist-test/
+release-notes/

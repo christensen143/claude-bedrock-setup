@@ -1,0 +1,338 @@
+name: Version Bump
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Type of version bump'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: 'patch'
+      prerelease:
+        description: 'Create a prerelease version'
+        required: false
+        type: boolean
+        default: false
+      prerelease_type:
+        description: 'Prerelease identifier (if prerelease is enabled)'
+        required: false
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
+        default: 'alpha'
+      dry_run:
+        description: 'Dry run - show what would be changed without making changes'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  PYTHONUNBUFFERED: 1
+  FORCE_COLOR: 1
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  validate-inputs:
+    name: Validate Inputs
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      current_version: ${{ steps.get-version.outputs.current_version }}
+      new_version: ${{ steps.calculate-version.outputs.new_version }}
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Get current version
+      id: get-version
+      run: |
+        CURRENT_VERSION=$(python -c "import sys; sys.path.insert(0, 'src'); from claude_setup import __version__; print(__version__)")
+        echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+        echo "Current version: $CURRENT_VERSION"
+        
+    - name: Install bump2version
+      run: |
+        pip install bump2version
+        
+    - name: Calculate new version
+      id: calculate-version
+      run: |
+        CURRENT_VERSION="${{ steps.get-version.outputs.current_version }}"
+        BUMP_TYPE="${{ github.event.inputs.bump_type }}"
+        IS_PRERELEASE="${{ github.event.inputs.prerelease }}"
+        PRERELEASE_TYPE="${{ github.event.inputs.prerelease_type }}"
+        
+        echo "Input parameters:"
+        echo "- Current version: $CURRENT_VERSION"
+        echo "- Bump type: $BUMP_TYPE"
+        echo "- Is prerelease: $IS_PRERELEASE"
+        echo "- Prerelease type: $PRERELEASE_TYPE"
+        
+        # Create temporary bumpversion config for calculation
+        cat > .bumpversion_temp.cfg << EOF
+        [bumpversion]
+        current_version = $CURRENT_VERSION
+        parse = (?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(-(?P<prerelease>[a-zA-Z]+)(?P<prerelease_num>\d+))?
+        serialize = 
+        	{major}.{minor}.{patch}-{prerelease}{prerelease_num}
+        	{major}.{minor}.{patch}
+        
+        [bumpversion:part:prerelease]
+        optional_value = release
+        values =
+        	release
+        	alpha
+        	beta
+        	rc
+        
+        [bumpversion:part:prerelease_num]
+        first_value = 1
+        EOF
+        
+        # Calculate new version based on inputs
+        if [[ "$IS_PRERELEASE" == "true" ]]; then
+          if [[ "$CURRENT_VERSION" =~ -.*$ ]]; then
+            # Already a prerelease, bump prerelease number
+            NEW_VERSION=$(bump2version --config-file .bumpversion_temp.cfg --dry-run --list prerelease_num | grep new_version= | cut -d= -f2)
+          else
+            # Convert to prerelease
+            NEW_VERSION=$(bump2version --config-file .bumpversion_temp.cfg --dry-run --list $BUMP_TYPE | grep new_version= | cut -d= -f2)
+            NEW_VERSION="${NEW_VERSION}-${PRERELEASE_TYPE}1"
+          fi
+        else
+          if [[ "$CURRENT_VERSION" =~ -.*$ ]]; then
+            # Convert prerelease to stable
+            NEW_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-.*$//')
+          else
+            # Normal version bump
+            NEW_VERSION=$(bump2version --config-file .bumpversion_temp.cfg --dry-run --list $BUMP_TYPE | grep new_version= | cut -d= -f2)
+          fi
+        fi
+        
+        rm .bumpversion_temp.cfg
+        
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "Calculated new version: $NEW_VERSION"
+        
+        # Validate the new version
+        if [[ ! "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z]+[0-9]+)?$ ]]; then
+          echo "❌ Invalid version format: $NEW_VERSION"
+          exit 1
+        fi
+        
+        echo "✅ Version calculation successful"
+
+  check-branch:
+    name: Check Branch Status
+    runs-on: ubuntu-latest
+    needs: validate-inputs
+    timeout-minutes: 5
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Check if on main branch
+      run: |
+        CURRENT_BRANCH=$(git branch --show-current)
+        echo "Current branch: $CURRENT_BRANCH"
+        
+        if [[ "$CURRENT_BRANCH" != "main" ]]; then
+          echo "❌ Version bumps must be performed on the main branch"
+          echo "Current branch: $CURRENT_BRANCH"
+          exit 1
+        fi
+        
+    - name: Check for uncommitted changes
+      run: |
+        if [[ -n $(git status --porcelain) ]]; then
+          echo "❌ There are uncommitted changes in the repository"
+          git status
+          exit 1
+        fi
+        
+    - name: Check if up to date with remote
+      run: |
+        git fetch origin main
+        BEHIND=$(git rev-list --count HEAD..origin/main)
+        AHEAD=$(git rev-list --count origin/main..HEAD)
+        
+        echo "Commits behind origin/main: $BEHIND"
+        echo "Commits ahead of origin/main: $AHEAD"
+        
+        if [[ $BEHIND -gt 0 ]]; then
+          echo "❌ Local branch is behind origin/main. Please pull latest changes."
+          exit 1
+        fi
+
+  bump-version:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    needs: [validate-inputs, check-branch]
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+        
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install bump2version
+      run: |
+        pip install bump2version
+        
+    - name: Configure git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+    - name: Show version bump plan
+      run: |
+        echo "## Version Bump Plan" >> $GITHUB_STEP_SUMMARY
+        echo "- Current version: ${{ needs.validate-inputs.outputs.current_version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- New version: ${{ needs.validate-inputs.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Bump type: ${{ github.event.inputs.bump_type }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Prerelease: ${{ github.event.inputs.prerelease }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Dry run: ${{ github.event.inputs.dry_run }}" >> $GITHUB_STEP_SUMMARY
+        
+    - name: Create bumpversion config
+      run: |
+        cat > .bumpversion.cfg << 'EOF'
+        [bumpversion]
+        current_version = ${{ needs.validate-inputs.outputs.current_version }}
+        commit = True
+        tag = True
+        tag_name = v{new_version}
+        tag_message = Bump version: {current_version} → {new_version}
+        message = Bump version: {current_version} → {new_version}
+        parse = (?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(-(?P<prerelease>[a-zA-Z]+)(?P<prerelease_num>\d+))?
+        serialize = 
+        	{major}.{minor}.{patch}-{prerelease}{prerelease_num}
+        	{major}.{minor}.{patch}
+        
+        [bumpversion:part:prerelease]
+        optional_value = release
+        values =
+        	release
+        	alpha
+        	beta
+        	rc
+        
+        [bumpversion:part:prerelease_num]
+        first_value = 1
+        
+        [bumpversion:file:src/claude_setup/__init__.py]
+        search = __version__ = "{current_version}"
+        replace = __version__ = "{new_version}"
+        
+        [bumpversion:file:pyproject.toml]
+        search = version = "{current_version}"
+        replace = version = "{new_version}"
+        EOF
+        
+    - name: Dry run version bump
+      if: github.event.inputs.dry_run == 'true'
+      run: |
+        echo "🔍 Performing dry run..."
+        bump2version --dry-run --verbose ${{ github.event.inputs.bump_type }}
+        echo "✅ Dry run completed successfully"
+        
+    - name: Execute version bump
+      if: github.event.inputs.dry_run != 'true'
+      run: |
+        echo "🚀 Executing version bump..."
+        
+        # Determine the bump command based on inputs
+        BUMP_TYPE="${{ github.event.inputs.bump_type }}"
+        IS_PRERELEASE="${{ github.event.inputs.prerelease }}"
+        CURRENT_VERSION="${{ needs.validate-inputs.outputs.current_version }}"
+        
+        if [[ "$IS_PRERELEASE" == "true" ]]; then
+          if [[ "$CURRENT_VERSION" =~ -.*$ ]]; then
+            # Already a prerelease, bump prerelease number
+            bump2version prerelease_num
+          else
+            # Convert to prerelease - need to do this manually
+            NEW_VERSION="${{ needs.validate-inputs.outputs.new_version }}"
+            sed -i "s/__version__ = \"$CURRENT_VERSION\"/__version__ = \"$NEW_VERSION\"/" src/claude_setup/__init__.py
+            
+            git add src/claude_setup/__init__.py
+            git commit -m "Bump version: $CURRENT_VERSION → $NEW_VERSION"
+            git tag "v$NEW_VERSION" -m "Bump version: $CURRENT_VERSION → $NEW_VERSION"
+          fi
+        else
+          if [[ "$CURRENT_VERSION" =~ -.*$ ]]; then
+            # Convert prerelease to stable - bump to next stable
+            bump2version prerelease
+          else
+            # Normal version bump
+            bump2version $BUMP_TYPE
+          fi
+        fi
+        
+        echo "✅ Version bump completed"
+        
+    - name: Show changes
+      if: github.event.inputs.dry_run != 'true'
+      run: |
+        echo "📝 Files changed:"
+        git show --name-only HEAD
+        echo ""
+        echo "📝 Commit message:"
+        git log -1 --pretty=format:"%s"
+        echo ""
+        echo "🏷️ New tag:"
+        git describe --tags --exact-match HEAD
+        
+    - name: Push changes
+      if: github.event.inputs.dry_run != 'true'
+      run: |
+        echo "📤 Pushing changes to origin..."
+        git push origin main
+        git push origin --tags
+        echo "✅ Changes pushed successfully"
+        
+    - name: Create summary
+      run: |
+        if [[ "${{ github.event.inputs.dry_run }}" == "true" ]]; then
+          echo "## 🔍 Dry Run Completed" >> $GITHUB_STEP_SUMMARY
+          echo "No changes were made. The version bump would have changed:" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "## 🎉 Version Bump Completed" >> $GITHUB_STEP_SUMMARY
+          echo "Successfully bumped version:" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "- From: ${{ needs.validate-inputs.outputs.current_version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- To: ${{ needs.validate-inputs.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ "${{ github.event.inputs.dry_run }}" != "true" ]]; then
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. The new tag \`v${{ needs.validate-inputs.outputs.new_version }}\` will trigger the release workflow" >> $GITHUB_STEP_SUMMARY
+          echo "2. Monitor the [Actions tab](../../actions) for the release progress" >> $GITHUB_STEP_SUMMARY
+          echo "3. The package will be published to PyPI automatically after approval" >> $GITHUB_STEP_SUMMARY
+        fi
