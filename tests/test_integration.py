@@ -225,6 +225,7 @@ class TestErrorHandlingIntegration:
         """Test workflow when AWS authentication fails."""
         # Arrange - make subprocess.run raise CalledProcessError to simulate auth failure
         import subprocess
+
         mock_subprocess_run.side_effect = subprocess.CalledProcessError(1, "aws")
 
         original_dir = os.getcwd()
@@ -256,7 +257,7 @@ class TestErrorHandlingIntegration:
         """Test workflow when Bedrock API returns error."""
         # Arrange
         from subprocess import CalledProcessError
-        
+
         def side_effect(*args, **kwargs):
             # Check if this is the auth check call
             if args[0] == ["aws", "sts", "get-caller-identity"]:
@@ -267,7 +268,7 @@ class TestErrorHandlingIntegration:
                 raise CalledProcessError(
                     1, "aws bedrock", stderr="AccessDeniedException: Not authorized"
                 )
-        
+
         mock_subprocess_run.side_effect = side_effect
 
         original_dir = os.getcwd()
