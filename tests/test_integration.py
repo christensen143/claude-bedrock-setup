@@ -190,17 +190,16 @@ class TestEndToEndWorkflow:
                 loaded_settings = config_manager.load_settings()
                 assert loaded_settings == initial_settings
 
-                # Test updating settings
+                # Test updating settings (now replaces entirely)
                 additional_settings = {
                     "ANTHROPIC_MODEL": "claude-3-sonnet",
                     "MAX_THINKING_TOKENS": "2048",
                 }
                 config_manager.save_settings(additional_settings)
 
-                # Verify merge behavior
+                # Verify replacement behavior (not merge)
                 updated_settings = config_manager.load_settings()
-                expected_settings = {**initial_settings, **additional_settings}
-                assert updated_settings == expected_settings
+                assert updated_settings == additional_settings
 
                 # Test reset
                 config_manager.reset_settings()
@@ -218,7 +217,7 @@ class TestErrorHandlingIntegration:
         """Set up test fixtures."""
         self.runner = CliRunner(env={"NO_COLOR": "1"})
 
-    @patch.object(sys.modules["claude_setup.auth_checker"], "check_aws_auth")
+    @patch("claude_setup.cli.check_aws_auth")
     @pytest.mark.skipif(
         sys.platform == "win32", reason="Temporary directory cleanup issues on Windows"
     )

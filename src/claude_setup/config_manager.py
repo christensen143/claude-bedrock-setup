@@ -19,15 +19,12 @@ class ConfigManager:
         """Save settings to .claude/settings.local.json"""
         self.ensure_claude_directory()
 
-        # Load existing settings if file exists
-        existing_settings = self.load_settings() or {}
-
-        # Update with new settings
-        existing_settings.update(settings)
+        # Create the env wrapper structure
+        env_wrapper = {"env": settings}
 
         # Write to file
         with open(self.settings_path, "w") as f:
-            json.dump(existing_settings, f, indent=2)
+            json.dump(env_wrapper, f, indent=2)
 
     def load_settings(self) -> Optional[Dict[str, str]]:
         """Load settings from .claude/settings.local.json"""
@@ -36,7 +33,12 @@ class ConfigManager:
 
         try:
             with open(self.settings_path, "r") as f:
-                return json.load(f)  # type: ignore[no-any-return]
+                content = json.load(f)
+                # Handle new format with env wrapper
+                if isinstance(content, dict) and "env" in content:
+                    return content["env"]  # type: ignore[no-any-return]
+                # Handle legacy format (direct settings)
+                return content  # type: ignore[no-any-return]
         except (json.JSONDecodeError, IOError):
             return None
 

@@ -33,20 +33,17 @@ class TestConfigManager:
 
     @patch("claude_setup.config_manager.Path.mkdir")
     @patch("builtins.open", new_callable=mock_open)
-    @patch("claude_setup.config_manager.ConfigManager.load_settings")
-    def test_save_settings_new_file(self, mock_load_settings, mock_file, mock_mkdir):
+    def test_save_settings_new_file(self, mock_file, mock_mkdir):
         """Test saving settings to a new file."""
         # Arrange
         config_manager = ConfigManager()
         settings = {"CLAUDE_CODE_USE_BEDROCK": "1", "AWS_REGION": "us-west-2"}
-        mock_load_settings.return_value = None
 
         # Act
         config_manager.save_settings(settings)
 
         # Assert
         mock_mkdir.assert_called_once_with(exist_ok=True)
-        mock_load_settings.assert_called_once()
         mock_file.assert_called_once_with(config_manager.settings_path, "w")
 
         # Check that json.dump was called - the actual data is written
@@ -55,40 +52,27 @@ class TestConfigManager:
         # write was called
         assert mock_file().write.called
 
-    @patch("claude_setup.config_manager.Path.mkdir")
-    @patch("builtins.open", new_callable=mock_open)
-    @patch("claude_setup.config_manager.ConfigManager.load_settings")
-    def test_save_settings_update_existing(
-        self, mock_load_settings, mock_file, mock_mkdir
-    ):
-        """Test saving settings to update existing file."""
-        # Arrange
-        config_manager = ConfigManager()
-        existing_settings = {
-            "EXISTING_KEY": "existing_value",
-            "CLAUDE_CODE_USE_BEDROCK": "0",
-        }
-        new_settings = {
-            "CLAUDE_CODE_USE_BEDROCK": "1",
-            "AWS_REGION": "us-west-2",
-        }
-        mock_load_settings.return_value = existing_settings
-
-        # Act
-        config_manager.save_settings(new_settings)
-
-        # Assert
-        mock_mkdir.assert_called_once_with(exist_ok=True)
-        mock_load_settings.assert_called_once()
-        mock_file.assert_called_once_with(config_manager.settings_path, "w")
-
-        # Verify that write was called (json.dump will call write internally)
-        assert mock_file().write.called
 
     @patch("builtins.open", new_callable=mock_open, read_data='{"key": "value"}')
     @patch("claude_setup.config_manager.Path.exists")
-    def test_load_settings_success(self, mock_exists, mock_file):
-        """Test successfully loading settings."""
+    def test_load_settings_legacy_format(self, mock_exists, mock_file):
+        """Test successfully loading settings in legacy format."""
+        # Arrange
+        config_manager = ConfigManager()
+        mock_exists.return_value = True
+
+        # Act
+        result = config_manager.load_settings()
+
+        # Assert
+        assert result == {"key": "value"}
+        mock_exists.assert_called_once()
+        mock_file.assert_called_once_with(config_manager.settings_path, "r")
+    
+    @patch("builtins.open", new_callable=mock_open, read_data='{"env": {"key": "value"}}')
+    @patch("claude_setup.config_manager.Path.exists")
+    def test_load_settings_new_format(self, mock_exists, mock_file):
+        """Test successfully loading settings in new env wrapper format."""
         # Arrange
         config_manager = ConfigManager()
         mock_exists.return_value = True
@@ -179,20 +163,17 @@ class TestConfigManager:
 
     @patch("claude_setup.config_manager.Path.mkdir")
     @patch("builtins.open", new_callable=mock_open)
-    @patch("claude_setup.config_manager.ConfigManager.load_settings")
-    def test_save_settings_empty_dict(self, mock_load_settings, mock_file, mock_mkdir):
+    def test_save_settings_empty_dict(self, mock_file, mock_mkdir):
         """Test saving empty settings dictionary."""
         # Arrange
         config_manager = ConfigManager()
         settings = {}
-        mock_load_settings.return_value = None
 
         # Act
         config_manager.save_settings(settings)
 
         # Assert
         mock_mkdir.assert_called_once_with(exist_ok=True)
-        mock_load_settings.assert_called_once()
         mock_file.assert_called_once_with(config_manager.settings_path, "w")
 
         # Check that write was called for empty dict
@@ -200,10 +181,7 @@ class TestConfigManager:
 
     @patch("claude_setup.config_manager.Path.mkdir")
     @patch("builtins.open", new_callable=mock_open)
-    @patch("claude_setup.config_manager.ConfigManager.load_settings")
-    def test_save_settings_special_characters(
-        self, mock_load_settings, mock_file, mock_mkdir
-    ):
+    def test_save_settings_special_characters(self, mock_file, mock_mkdir):
         """Test saving settings with special characters."""
         # Arrange
         config_manager = ConfigManager()
@@ -211,14 +189,12 @@ class TestConfigManager:
             "SPECIAL_CHARS": "!@#$%^&*()_+-=[]{}|;':\",./<>?",
             "UNICODE": "héllo wørld 你好",
         }
-        mock_load_settings.return_value = None
 
         # Act
         config_manager.save_settings(settings)
 
         # Assert
         mock_mkdir.assert_called_once_with(exist_ok=True)
-        mock_load_settings.assert_called_once()
         mock_file.assert_called_once_with(config_manager.settings_path, "w")
         assert mock_file().write.called
 
@@ -226,6 +202,22 @@ class TestConfigManager:
     @patch("claude_setup.config_manager.Path.exists")
     def test_load_settings_empty_file(self, mock_exists, mock_file):
         """Test loading settings from empty JSON file."""
+        # Arrange
+        config_manager = ConfigManager()
+        mock_exists.return_value = True
+
+        # Act
+        result = config_manager.load_settings()
+
+        # Assert
+        assert result == {}
+        mock_exists.assert_called_once()
+        mock_file.assert_called_once_with(config_manager.settings_path, "r")
+    
+    @patch("builtins.open", new_callable=mock_open, read_data='{"env": {}}')
+    @patch("claude_setup.config_manager.Path.exists")
+    def test_load_settings_empty_env(self, mock_exists, mock_file):
+        """Test loading settings from empty env wrapper."""
         # Arrange
         config_manager = ConfigManager()
         mock_exists.return_value = True
@@ -256,22 +248,17 @@ class TestConfigManager:
 
     @patch("claude_setup.config_manager.Path.mkdir")
     @patch("builtins.open", side_effect=PermissionError("Permission denied"))
-    @patch("claude_setup.config_manager.ConfigManager.load_settings")
-    def test_save_settings_file_permission_error(
-        self, mock_load_settings, mock_file, mock_mkdir
-    ):
+    def test_save_settings_file_permission_error(self, mock_file, mock_mkdir):
         """Test saving settings when file write raises PermissionError."""
         # Arrange
         config_manager = ConfigManager()
         settings = {"key": "value"}
-        mock_load_settings.return_value = None
 
         # Act & Assert
         with pytest.raises(PermissionError, match="Permission denied"):
             config_manager.save_settings(settings)
 
         mock_mkdir.assert_called_once_with(exist_ok=True)
-        mock_load_settings.assert_called_once()
         mock_file.assert_called_once_with(config_manager.settings_path, "w")
 
     @patch(
