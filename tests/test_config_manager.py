@@ -52,7 +52,6 @@ class TestConfigManager:
         # write was called
         assert mock_file().write.called
 
-
     @patch("builtins.open", new_callable=mock_open, read_data='{"key": "value"}')
     @patch("claude_setup.config_manager.Path.exists")
     def test_load_settings_legacy_format(self, mock_exists, mock_file):
@@ -68,7 +67,7 @@ class TestConfigManager:
         assert result == {"key": "value"}
         mock_exists.assert_called_once()
         mock_file.assert_called_once_with(config_manager.settings_path, "r")
-    
+
     @patch("builtins.open", new_callable=mock_open, read_data='{"env": {"key": "value"}}')
     @patch("claude_setup.config_manager.Path.exists")
     def test_load_settings_new_format(self, mock_exists, mock_file):
@@ -213,7 +212,7 @@ class TestConfigManager:
         assert result == {}
         mock_exists.assert_called_once()
         mock_file.assert_called_once_with(config_manager.settings_path, "r")
-    
+
     @patch("builtins.open", new_callable=mock_open, read_data='{"env": {}}')
     @patch("claude_setup.config_manager.Path.exists")
     def test_load_settings_empty_env(self, mock_exists, mock_file):

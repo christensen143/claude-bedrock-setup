@@ -36,9 +36,7 @@ class TestEndToEndWorkflow:
         """Test complete setup workflow from start to finish."""
         # Arrange
         mock_auth.return_value = True
-        mock_subprocess.return_value = MagicMock(
-            returncode=0, stdout=json.dumps(mock_aws_response)
-        )
+        mock_subprocess.return_value = MagicMock(returncode=0, stdout=json.dumps(mock_aws_response))
 
         with self.runner.isolated_filesystem():
             # Act - Run setup
@@ -78,30 +76,22 @@ class TestEndToEndWorkflow:
 
     @patch.object(sys.modules["claude_setup.auth_checker"], "check_aws_auth")
     @patch("claude_setup.aws_client.subprocess.run")
-    def test_setup_with_different_regions(
-        self, mock_subprocess, mock_auth, mock_aws_response
-    ):
+    def test_setup_with_different_regions(self, mock_subprocess, mock_auth, mock_aws_response):
         """Test setup workflow with different AWS regions."""
         # Arrange
         mock_auth.return_value = True
-        mock_subprocess.return_value = MagicMock(
-            returncode=0, stdout=json.dumps(mock_aws_response)
-        )
+        mock_subprocess.return_value = MagicMock(returncode=0, stdout=json.dumps(mock_aws_response))
 
         regions = ["us-east-1", "eu-west-1", "ap-southeast-1"]
 
         for region in regions:
             with self.runner.isolated_filesystem():
                 # Act
-                result = self.runner.invoke(
-                    cli, ["setup", "--region", region, "--non-interactive"]
-                )
+                result = self.runner.invoke(cli, ["setup", "--region", region, "--non-interactive"])
 
                 # Assert
                 assert result.exit_code == 0
-                assert (
-                    f"Fetching available Claude models from {region}" in result.output
-                )
+                assert f"Fetching available Claude models from {region}" in result.output
 
                 # Verify region in configuration
                 config_manager = ConfigManager()
@@ -275,10 +265,7 @@ class TestErrorHandlingIntegration:
                 # Assert - The exception from BedrockClient causes the CLI to exit
                 assert result.exit_code != 0
                 # The exception message should appear in the result
-                assert (
-                    "Access denied" in str(result.exception)
-                    or "Access denied" in result.output
-                )
+                assert "Access denied" in str(result.exception) or "Access denied" in result.output
 
                 # Verify no configuration was created
                 config_manager = ConfigManager()

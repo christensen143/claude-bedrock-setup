@@ -29,9 +29,9 @@ class TestEnsureGitignore:
         mock_file.assert_any_call(Path(".gitignore"), "w")
 
         # Check the written content
-        write_call = [
-            call for call in mock_file.return_value.write.call_args_list if call[0][0]
-        ][-1]
+        write_call = [call for call in mock_file.return_value.write.call_args_list if call[0][0]][
+            -1
+        ]
         written_content = write_call[0][0]
         assert ".claude/settings.local.json\n" == written_content
 
@@ -56,9 +56,9 @@ class TestEnsureGitignore:
         mock_file.assert_any_call(Path(".gitignore"), "w")
 
         # Check the written content includes existing and new patterns
-        write_call = [
-            call for call in mock_file.return_value.write.call_args_list if call[0][0]
-        ][-1]
+        write_call = [call for call in mock_file.return_value.write.call_args_list if call[0][0]][
+            -1
+        ]
         written_content = write_call[0][0]
         assert "node_modules/\n*.log\n.claude/settings.local.json\n" == written_content
 
@@ -118,9 +118,9 @@ class TestEnsureGitignore:
         mock_file.assert_any_call(Path(".gitignore"), "w")
 
         # Check the written content
-        write_call = [
-            call for call in mock_file.return_value.write.call_args_list if call[0][0]
-        ][-1]
+        write_call = [call for call in mock_file.return_value.write.call_args_list if call[0][0]][
+            -1
+        ]
         written_content = write_call[0][0]
         assert ".claude/settings.local.json\n" == written_content
 
@@ -130,9 +130,7 @@ class TestEnsureGitignore:
         read_data="node_modules/\n# Comment\n\n*.log\n",
     )
     @patch("claude_setup.gitignore_manager.Path.exists")
-    def test_ensure_gitignore_with_comments_and_empty_lines(
-        self, mock_exists, mock_file
-    ):
+    def test_ensure_gitignore_with_comments_and_empty_lines(self, mock_exists, mock_file):
         """Test handling .gitignore with comments and empty lines."""
         # Arrange
         mock_exists.return_value = True
@@ -145,9 +143,9 @@ class TestEnsureGitignore:
         assert mock_file.call_count == 2
 
         # Check the written content preserves structure
-        write_call = [
-            call for call in mock_file.return_value.write.call_args_list if call[0][0]
-        ][-1]
+        write_call = [call for call in mock_file.return_value.write.call_args_list if call[0][0]][
+            -1
+        ]
         written_content = write_call[0][0]
         expected = "node_modules/\n# Comment\n\n*.log\n.claude/settings.local.json\n"
         assert expected == written_content
@@ -209,9 +207,7 @@ class TestEnsureGitignore:
         read_data="node_modules/\n.claude/settings.local.json  \n*.log\n",
     )
     @patch("claude_setup.gitignore_manager.Path.exists")
-    def test_ensure_gitignore_pattern_with_trailing_spaces(
-        self, mock_exists, mock_file
-    ):
+    def test_ensure_gitignore_pattern_with_trailing_spaces(self, mock_exists, mock_file):
         """Test that trailing spaces in existing pattern don't match."""
         # Arrange
         mock_exists.return_value = True
@@ -227,9 +223,9 @@ class TestEnsureGitignore:
 
         # Check that the pattern was added despite similar line
         # with trailing spaces
-        write_call = [
-            call for call in mock_file.return_value.write.call_args_list if call[0][0]
-        ][-1]
+        write_call = [call for call in mock_file.return_value.write.call_args_list if call[0][0]][
+            -1
+        ]
         written_content = write_call[0][0]
         assert ".claude/settings.local.json" in written_content
         # Should have both the original line with spaces and the new clean line
@@ -270,8 +266,8 @@ class TestEnsureGitignore:
         assert mock_file.call_count == 2
 
         # Check the written content adds pattern properly
-        write_call = [
-            call for call in mock_file.return_value.write.call_args_list if call[0][0]
-        ][-1]
+        write_call = [call for call in mock_file.return_value.write.call_args_list if call[0][0]][
+            -1
+        ]
         written_content = write_call[0][0]
         assert "line1\nline2\nline3\n.claude/settings.local.json\n" == written_content

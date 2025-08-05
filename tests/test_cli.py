@@ -168,9 +168,7 @@ class TestSetupCommand:
         mock_config_class.return_value = mock_config
 
         # Act
-        result = self.runner.invoke(
-            setup, ["--region", "eu-west-1", "--non-interactive"]
-        )
+        result = self.runner.invoke(setup, ["--region", "eu-west-1", "--non-interactive"])
 
         # Assert
         assert result.exit_code == 0
@@ -334,9 +332,7 @@ class TestStatusCommand:
         assert "Current settings:" in result.output
         assert "CLAUDE_CODE_USE_BEDROCK: 1" in result.output
         assert "AWS_REGION: us-west-2" in result.output
-        assert (
-            "anthropic.claude-3-sonnet-20240229-v1:0" in result.output
-        )  # Extracted from ARN
+        assert "anthropic.claude-3-sonnet-20240229-v1:0" in result.output  # Extracted from ARN
         assert "Settings file: /test/.claude/settings.local.json" in result.output
         mock_config.load_settings.assert_called_once()
 
@@ -360,9 +356,7 @@ class TestStatusCommand:
 
         # Assert
         assert result.exit_code == 0
-        assert (
-            "ANTHROPIC_MODEL: anthropic.claude-3-haiku-20240307-v1:0" in result.output
-        )
+        assert "ANTHROPIC_MODEL: anthropic.claude-3-haiku-20240307-v1:0" in result.output
 
     @patch.object(sys.modules["claude_setup.cli"], "ConfigManager")
     def test_status_simple_model_id(self, mock_config_class):

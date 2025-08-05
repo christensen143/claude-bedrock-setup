@@ -28,9 +28,7 @@ class TestBedrockClient:
         """Test successful listing of Claude models."""
         # Arrange
         client = BedrockClient("us-west-2")
-        mock_run.return_value = MagicMock(
-            returncode=0, stdout=json.dumps(mock_aws_response)
-        )
+        mock_run.return_value = MagicMock(returncode=0, stdout=json.dumps(mock_aws_response))
 
         # Act
         result = client.list_claude_models()
@@ -100,9 +98,7 @@ class TestBedrockClient:
                 }
             ]
         }
-        mock_run.return_value = MagicMock(
-            returncode=0, stdout=json.dumps(non_claude_response)
-        )
+        mock_run.return_value = MagicMock(returncode=0, stdout=json.dumps(non_claude_response))
 
         # Act
         result = client.list_claude_models()
@@ -129,9 +125,7 @@ class TestBedrockClient:
                 }
             ]
         }
-        mock_run.return_value = MagicMock(
-            returncode=0, stdout=json.dumps(response_without_name)
-        )
+        mock_run.return_value = MagicMock(returncode=0, stdout=json.dumps(response_without_name))
 
         # Act
         result = client.list_claude_models()
@@ -155,10 +149,7 @@ class TestBedrockClient:
         # Act & Assert
         with pytest.raises(
             Exception,
-            match=(
-                "Access denied. Please check your AWS "
-                "permissions for Amazon Bedrock."
-            ),
+            match=("Access denied. Please check your AWS " "permissions for Amazon Bedrock."),
         ):
             client.list_claude_models()
 
@@ -172,10 +163,7 @@ class TestBedrockClient:
         error = subprocess.CalledProcessError(
             1,
             "aws",
-            stderr=(
-                "The security token included in the request is invalid. "
-                "not authorized"
-            ),
+            stderr=("The security token included in the request is invalid. " "not authorized"),
         )
         mock_run.side_effect = error
 
@@ -227,9 +215,7 @@ class TestBedrockClient:
         mock_run.side_effect = RuntimeError("Unexpected runtime error")
 
         # Act & Assert
-        with pytest.raises(
-            Exception, match="Unexpected error: Unexpected runtime error"
-        ):
+        with pytest.raises(Exception, match="Unexpected error: Unexpected runtime error"):
             client.list_claude_models()
 
         mock_run.assert_called_once()
@@ -240,9 +226,7 @@ class TestBedrockClient:
         # Arrange
         custom_region = "eu-west-1"
         client = BedrockClient(custom_region)
-        mock_run.return_value = MagicMock(
-            returncode=0, stdout=json.dumps(mock_aws_response)
-        )
+        mock_run.return_value = MagicMock(returncode=0, stdout=json.dumps(mock_aws_response))
 
         # Act
         result = client.list_claude_models()
@@ -275,9 +259,7 @@ class TestBedrockClient:
                 }
             ]
         }
-        mock_run.return_value = MagicMock(
-            returncode=0, stdout=json.dumps(partial_response)
-        )
+        mock_run.return_value = MagicMock(returncode=0, stdout=json.dumps(partial_response))
 
         # Act
         result = client.list_claude_models()
