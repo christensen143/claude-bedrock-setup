@@ -24,7 +24,7 @@ class TestCLI:
         """Test CLI version option."""
         result = self.runner.invoke(cli, ["--version"])
         assert result.exit_code == 0
-        assert "claude-bedrock-setup, version 0.1.0" in result.output
+        assert "claude-bedrock-setup, version 0.2.0" in result.output
 
     def test_cli_help(self):
         """Test CLI help."""

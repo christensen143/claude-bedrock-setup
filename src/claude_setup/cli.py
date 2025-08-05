@@ -7,6 +7,7 @@ from rich.panel import Panel
 from rich.text import Text
 import sys
 
+from ._version import __version__
 from .auth_checker import check_aws_auth
 from .aws_client import BedrockClient
 from .config_manager import ConfigManager
@@ -23,7 +24,7 @@ else:
 
 
 @click.group()
-@click.version_option(version="0.1.0", prog_name="claude-bedrock-setup")
+@click.version_option(version=__version__, prog_name="claude-bedrock-setup")
 def cli() -> None:
     """Claude Bedrock Setup CLI - Configure Claude to use AWS Bedrock"""
     pass

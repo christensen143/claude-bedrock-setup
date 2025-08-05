@@ -1,19 +1,6 @@
 """setup.py - Setup script for the Claude Bedrock Setup CLI tool."""
 
-import os
-import re
 from setuptools import setup, find_packages
-
-
-def get_version():
-    """Extract version from src/claude_setup/_version.py."""
-    version_file = os.path.join("src", "claude_setup", "_version.py")
-    with open(version_file, "r", encoding="utf-8") as f:
-        content = f.read()
-    match = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', content, re.MULTILINE)
-    if match:
-        return match.group(1)
-    raise RuntimeError("Unable to find __version__ in _version.py")
 
 
 # Read long description from README.md
@@ -31,7 +18,7 @@ def get_long_description():
 
 setup(
     name="claude-bedrock-setup",
-    version=get_version(),
+    version="0.2.0",
     author="Chris Christensen",
     author_email="chris.christensen@nexusweblabs.com",
     description="CLI tool to configure Claude Desktop for AWS Bedrock",
