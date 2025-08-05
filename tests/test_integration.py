@@ -223,7 +223,7 @@ class TestErrorHandlingIntegration:
     )
     def test_auth_failure_workflow(self, mock_subprocess_run):
         """Test workflow when AWS authentication fails."""
-        # Arrange - make subprocess.run raise CalledProcessError to simulate auth failure
+        # Arrange - make subprocess.run raise CalledProcessError for auth failure
         import subprocess
 
         mock_subprocess_run.side_effect = subprocess.CalledProcessError(1, "aws")
