@@ -217,14 +217,15 @@ class TestErrorHandlingIntegration:
         """Set up test fixtures."""
         self.runner = CliRunner(env={"NO_COLOR": "1"})
 
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch("claude_setup.auth_checker.subprocess.run")
     @pytest.mark.skipif(
         sys.platform == "win32", reason="Temporary directory cleanup issues on Windows"
     )
-    def test_auth_failure_workflow(self, mock_auth):
+    def test_auth_failure_workflow(self, mock_subprocess_run):
         """Test workflow when AWS authentication fails."""
-        # Arrange
-        mock_auth.return_value = False
+        # Arrange - make subprocess.run raise CalledProcessError to simulate auth failure
+        import subprocess
+        mock_subprocess_run.side_effect = subprocess.CalledProcessError(1, "aws")
 
         original_dir = os.getcwd()
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -247,21 +248,27 @@ class TestErrorHandlingIntegration:
             finally:
                 os.chdir(original_dir)
 
-    @patch("claude_setup.aws_client.subprocess.run")
-    @patch("claude_setup.cli.check_aws_auth")
+    @patch("subprocess.run")
     @pytest.mark.skipif(
         sys.platform == "win32", reason="Temporary directory cleanup issues on Windows"
     )
-    def test_bedrock_api_error_workflow(self, mock_auth, mock_subprocess):
+    def test_bedrock_api_error_workflow(self, mock_subprocess_run):
         """Test workflow when Bedrock API returns error."""
         # Arrange
-        mock_auth.return_value = True
-        # subprocess.run is called when listing models - should raise CalledProcessError
         from subprocess import CalledProcessError
-
-        mock_subprocess.side_effect = CalledProcessError(
-            1, "aws bedrock", stderr="AccessDeniedException: Not authorized"
-        )
+        
+        def side_effect(*args, **kwargs):
+            # Check if this is the auth check call
+            if args[0] == ["aws", "sts", "get-caller-identity"]:
+                # Make auth check pass
+                return MagicMock(returncode=0)
+            else:
+                # Make bedrock API call fail
+                raise CalledProcessError(
+                    1, "aws bedrock", stderr="AccessDeniedException: Not authorized"
+                )
+        
+        mock_subprocess_run.side_effect = side_effect
 
         original_dir = os.getcwd()
         with tempfile.TemporaryDirectory() as temp_dir:
