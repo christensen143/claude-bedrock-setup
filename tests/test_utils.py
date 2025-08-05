@@ -150,7 +150,9 @@ class CLITestHelper:
     """Helper class for CLI testing."""
 
     @staticmethod
-    def run_cli_command(runner, command, args=None, input_data=None, catch_exceptions=True):
+    def run_cli_command(
+        runner, command, args=None, input_data=None, catch_exceptions=True
+    ):
         """Run a CLI command with standard error handling.
 
         Args:
