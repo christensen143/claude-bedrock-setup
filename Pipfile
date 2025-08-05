@@ -9,6 +9,7 @@ boto3 = ">=1.34.0"
 rich = ">=13.7.0"
 python-dotenv = ">=1.0.0"
 claude-setup = {file = ".", editable = true}
+claude-bedrock-setup = {file = ".", editable = true}
 
 [dev-packages]
 black = "*"
