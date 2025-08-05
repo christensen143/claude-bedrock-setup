@@ -248,7 +248,7 @@ class TestErrorHandlingIntegration:
                 os.chdir(original_dir)
 
     @patch("claude_setup.aws_client.subprocess.run")
-    @patch.object(sys.modules["claude_setup.cli"], "check_aws_auth")
+    @patch("claude_setup.cli.check_aws_auth")
     @pytest.mark.skipif(
         sys.platform == "win32", reason="Temporary directory cleanup issues on Windows"
     )
