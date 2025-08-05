@@ -50,8 +50,7 @@ class BedrockClient:
         except subprocess.CalledProcessError as e:
             if "AccessDeniedException" in e.stderr:
                 raise Exception(
-                    "Access denied. Please check your AWS "
-                    "permissions for Amazon Bedrock."
+                    "Access denied. Please check your AWS " "permissions for Amazon Bedrock."
                 )
             elif "not authorized" in e.stderr:
                 raise Exception(
