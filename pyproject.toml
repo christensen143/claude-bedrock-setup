@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "claude-bedrock-setup"
-version = "0.1.0"
+version = "0.2.0"
 # dynamic = ["version"]  # Commented out for bump2version compatibility
 description = "CLI tool to configure Claude Code for AWS Bedrock"
 readme = "README.md"
