@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Modern PyPI distribution setup with pyproject.toml
 - Enhanced setup.py with complete metadata
 - MIT License
@@ -15,16 +16,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Development toolchain configuration (black, mypy, pytest)
 
 ### Changed
+
 - Updated package metadata and versioning system
 
 ### Fixed
+
 - Package structure for proper PyPI distribution
 
 ## [0.1.0] - 2024-08-04
 
 ### Added
+
 - Initial release of claude-bedrock-setup CLI tool
-- Interactive setup wizard for Claude Desktop configuration
+- Interactive setup wizard for Claude Code configuration
 - AWS Bedrock authentication and model discovery
 - Support for multiple AWS authentication methods (CLI profiles, SSO, environment variables, IAM roles)
 - Automatic .gitignore management for configuration files
@@ -33,12 +37,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reset functionality for easy reconfiguration
 
 ### Features
+
 - `claude-bedrock-setup setup` - Interactive configuration wizard
 - `claude-bedrock-setup configure` - Manual configuration with specific parameters
 - `claude-bedrock-setup status` - Check current configuration and AWS authentication
 - `claude-bedrock-setup reset` - Reset configuration to start fresh
 
 ### Supported
+
 - Python 3.7+
 - AWS Bedrock regions: us-east-1, us-west-2, eu-west-1, ap-southeast-1
 - Claude 3.5 Sonnet, Claude 3 Opus, Claude 3 Haiku models
@@ -46,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cross-platform support (Windows, macOS, Linux)
 
 ### Dependencies
+
 - click>=8.1.0 - CLI framework
 - boto3>=1.34.0 - AWS SDK
 - rich>=13.7.0 - Terminal formatting

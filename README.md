@@ -6,7 +6,7 @@
 [![Tests](https://github.com/christensen143/claude-bedrock-setup/actions/workflows/ci.yml/badge.svg)](https://github.com/christensen143/claude-bedrock-setup/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-98%25-brightgreen.svg)](https://github.com/christensen143/claude-bedrock-setup)
 
-A command-line tool to configure Claude Desktop to use AWS Bedrock as its AI provider. This tool simplifies the process of discovering available Claude models in your AWS account and automatically configures Claude Desktop with the appropriate settings.
+A command-line tool to configure Claude Code to use AWS Bedrock as its AI provider. This tool simplifies the process of discovering available Claude models in your AWS account and automatically configures Claude Code with the appropriate settings.
 
 ## Features
 
@@ -22,7 +22,7 @@ A command-line tool to configure Claude Desktop to use AWS Bedrock as its AI pro
 - Python 3.10 or higher
 - AWS CLI configured with valid credentials
 - AWS account with access to Amazon Bedrock
-- Claude Desktop application installed
+- Claude Code application installed
 
 ## Installation
 
@@ -64,7 +64,7 @@ pip install -e .
 
 3. **Follow the interactive prompts** to select your preferred Claude model
 
-That's it! Claude Desktop is now configured to use AWS Bedrock.
+That's it! Claude Code is now configured to use AWS Bedrock.
 
 ## Usage
 
@@ -81,7 +81,7 @@ This will:
 1. Verify your AWS authentication
 2. List available Claude models in your account
 3. Let you select your preferred model
-4. Save the configuration for Claude Desktop
+4. Save the configuration for Claude Code
 
 ### Manual Configuration
 
@@ -279,7 +279,7 @@ See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes.
 
 - [ ] Support for multiple configuration profiles
 - [ ] Configuration templates for different use cases
-- [ ] Direct integration with Claude Desktop API
+- [ ] Direct integration with Claude Code API
 - [ ] Support for other AI providers
 - [ ] Configuration validation and testing
 
