@@ -48,7 +48,8 @@ def setup(region: str, non_interactive: bool) -> None:
         console.print("\nPlease authenticate with AWS using one of these " "methods:")
         console.print("  • aws configure")
         console.print(
-            "  • Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY " "environment variables"
+            "  • Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY "
+            "environment variables"
         )
         console.print("  • Use AWS SSO: aws sso login")
         console.print("\nThen run this command again.")
@@ -60,7 +61,9 @@ def setup(region: str, non_interactive: bool) -> None:
     bedrock_client = BedrockClient(region)
 
     # Get available models
-    console.print(f"\n[yellow]Fetching available Claude models from " f"{region}...[/yellow]")
+    console.print(
+        f"\n[yellow]Fetching available Claude models from " f"{region}...[/yellow]"
+    )
     models = bedrock_client.list_claude_models()
 
     if not models:
@@ -71,7 +74,10 @@ def setup(region: str, non_interactive: bool) -> None:
     # Select model
     if non_interactive and models:
         selected_model = models[0]
-        console.print(f"[yellow]Using first available model: " f"{selected_model['name']}[/yellow]")
+        console.print(
+            f"[yellow]Using first available model: "
+            f"{selected_model['name']}[/yellow]"
+        )
     else:
         console.print("\n[bold]Available Claude models:[/bold]")
         for idx, model in enumerate(models, 1):
@@ -119,7 +125,9 @@ def status() -> None:
 
     if not settings:
         console.print("[yellow]No configuration found.[/yellow]")
-        console.print("Run 'claude-bedrock-setup setup' to configure Claude for " "AWS Bedrock.")
+        console.print(
+            "Run 'claude-bedrock-setup setup' to configure Claude for " "AWS Bedrock."
+        )
         return
 
     console.print(Panel.fit(Text("Claude Bedrock Configuration", style="bold blue")))
@@ -137,7 +145,9 @@ def status() -> None:
 
 
 @cli.command()
-@click.confirmation_option(prompt="Are you sure you want to reset the " "configuration?")
+@click.confirmation_option(
+    prompt="Are you sure you want to reset the " "configuration?"
+)
 def reset() -> None:
     """Reset Claude Bedrock configuration"""
     config_manager = ConfigManager()
